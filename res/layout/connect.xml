@@ -37,7 +37,7 @@
         android:textColor="#ffffff"
         android:layout_margin="5dip"/>
 
-    <View
+    <View 
         android:id="@+id/divider"
         android:layout_width="fill_parent"
         android:layout_height="1dip"
