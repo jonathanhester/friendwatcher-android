@@ -53,8 +53,8 @@ public class Util {
 	private static final String ENVIRONMENT_PROD = "prod";
 	private static final String ENVIRONMENT_LOCAL = "local1";
 	
-	//private static final String ENVIRONMENT = ENVIRONMENT_PROD;
-	private static final String ENVIRONMENT = ENVIRONMENT_LOCAL;
+	private static final String ENVIRONMENT = ENVIRONMENT_PROD;
+	//private static final String ENVIRONMENT = ENVIRONMENT_LOCAL;
 
 	// Shared constants
 
@@ -115,7 +115,7 @@ public class Util {
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
 				notificationIntent, 0);
 
-		notification.setLatestEventInfo(context, "FriendsWatcher update!",
+		notification.setLatestEventInfo(context, "Friend Watcher update!",
 				message, contentIntent);
 		notification.flags |= Notification.FLAG_AUTO_CANCEL;
 

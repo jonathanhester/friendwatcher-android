@@ -15,13 +15,15 @@
  */
 package com.jonathanhester.friendwatcher;
 
-import com.google.android.c2dm.C2DMBaseReceiver;
+
 
 import java.io.IOException;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+
+import com.jonathanhester.c2dm.C2DMBaseReceiver;
 
 /**
  * Receive a push message from the Cloud to Device Messaging (C2DM) service.

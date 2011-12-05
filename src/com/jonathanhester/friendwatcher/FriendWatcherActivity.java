@@ -21,7 +21,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -29,14 +28,11 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 
 import com.facebook.android.Facebook;
-import com.google.android.c2dm.C2DMessaging;
-import com.google.web.bindery.requestfactory.shared.Receiver;
-import com.google.web.bindery.requestfactory.shared.ServerFailure;
-import com.jonathanhester.friendwatcher.client.MyRequestFactory;
-import com.jonathanhester.friendwatcher.client.MyRequestFactory.HelloWorldRequest;
+import com.jonathanhester.c2dm.C2DMessaging;
 
 /**
  * Main activity - requests "Hello, World" messages from the server and provides
@@ -92,7 +88,7 @@ public class FriendWatcherActivity extends Activity {
 				registerC2DM();
 			}
 		});
-		c2dmReg.setEnabled(true);
+		c2dmReg.setVisibility(View.VISIBLE);
 	}
 
 	/**
@@ -102,7 +98,7 @@ public class FriendWatcherActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		setContentView(R.layout.friend_watcher);
 		Button c2dmReg = (Button) findViewById(R.id.c2dm_reg);
-		c2dmReg.setEnabled(false);
+		c2dmReg.setVisibility(View.GONE);
 		Log.i(TAG, "onCreate");
 		super.onCreate(savedInstanceState);
 
@@ -165,55 +161,6 @@ public class FriendWatcherActivity extends Activity {
 	}
 
 	Facebook facebook = new Facebook(Util.getFacebookId());
-
-	private void setHelloWorldScreenContent() {
-		final Button sayHelloButton = (Button) findViewById(R.id.c2dm_reg);
-		sayHelloButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				showUnfriended();
-				registerC2DM();
-				// sayHelloButton.setEnabled(false);
-				// helloWorld.setText(R.string.contacting_server);
-
-				// Use an AsyncTask to avoid blocking the UI thread
-				new AsyncTask<Void, Void, String>() {
-					private String message;
-
-					@Override
-					protected String doInBackground(Void... arg0) {
-						MyRequestFactory requestFactory = Util
-								.getRequestFactory(mContext,
-										MyRequestFactory.class);
-						final HelloWorldRequest request = requestFactory
-								.helloWorldRequest();
-						String accountName = Util
-								.getSharedPreferences(mContext).getString(
-										Util.ACCOUNT_NAME, "<none>");
-						Log.i(TAG, "Sending request to server for account "
-								+ accountName);
-						request.getMessage().fire(new Receiver<String>() {
-							@Override
-							public void onFailure(ServerFailure error) {
-								message = "Failure: " + error.getMessage();
-							}
-
-							@Override
-							public void onSuccess(String result) {
-								message = result;
-							}
-						});
-						return message;
-					}
-
-					@Override
-					protected void onPostExecute(String result) {
-						// helloWorld.setText(result);
-						sayHelloButton.setEnabled(true);
-					}
-				};// .execute();
-			}
-		});
-	}
 
 	private void showUnfriended() {
 		String url = Util.getIframeUrl(mContext);
