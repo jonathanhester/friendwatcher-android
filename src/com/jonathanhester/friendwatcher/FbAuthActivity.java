@@ -69,13 +69,7 @@ public class FbAuthActivity extends Activity {
 							e.getMessage();
 						}
 
-						
-						final SharedPreferences prefs = Util.getSharedPreferences(FbAuthActivity.this);
-						SharedPreferences.Editor editor = prefs.edit();
-						String accessToken = facebook.getAccessToken();
-						editor.putString(Util.ACCESS_TOKEN, accessToken);
-						editor.putString(Util.ACCOUNT_NAME, fbId);
-						editor.commit();
+						FacebookFriendsChecker.saveFbCreds(FbAuthActivity.this, facebook.getAccessToken(), fbId);
 						finish();
 					}
 

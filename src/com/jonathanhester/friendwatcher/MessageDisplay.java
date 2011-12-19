@@ -41,8 +41,9 @@ public class MessageDisplay {
         if (extras != null) {
             String sender = (String) extras.get("sender");
             String message = (String) extras.get("message");
-            Util.generateNotification(context, "See how your friends list changed!");
-            playNotificationSound(context);
+            String type = (String) extras.get("type");
+            Util.generateNotification(context, message);
+            //playNotificationSound(context);
         }
     }
 

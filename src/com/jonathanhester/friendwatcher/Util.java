@@ -64,6 +64,10 @@ public class Util {
 	public static final String ACCOUNT_NAME = "accountNamev2";
 
 	public static final String ACCESS_TOKEN = "accessTokenv2";
+	
+	public static final String ACCOUNT_NAME_TEMP = "accountNamev2_temp";
+
+	public static final String ACCESS_TOKEN_TEMP = "accessTokenv2_temp";
 
 	public static final String FRIEND_IDS = "friendIds";
 

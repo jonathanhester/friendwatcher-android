@@ -142,4 +142,24 @@ public class FacebookFriendsChecker {
 	}
 	
 	
+	public static boolean verifyToken(Facebook facebook) {
+		String permissions = "";
+		try {
+			permissions = facebook.request("me/permissions");
+			JSONObject data = com.facebook.android.Util.parseJson(permissions);
+		} catch (Exception e) {
+			return false;
+		} catch (FacebookError e) {
+			return false;
+		}
+		return true;
+	}
+	
+	public static void saveFbCreds(Context context, String accessToken, String fbId) {
+		final SharedPreferences prefs = Util.getSharedPreferences(context);
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString(Util.ACCESS_TOKEN, accessToken);
+		editor.putString(Util.ACCOUNT_NAME, fbId);
+		editor.commit();
+	}
 }
