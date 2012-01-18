@@ -16,6 +16,8 @@
 package com.jonathanhester.friendwatcher;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -75,9 +77,8 @@ public class FriendWatcherActivity extends Activity {
 
 			// Display a notification
 			SharedPreferences prefs = Util.getSharedPreferences(mContext);
-			String accountName = prefs.getString(Util.ACCOUNT_NAME, "Unknown");
-			Util.generateNotification(mContext,
-					String.format(message, accountName));
+			stopLoading();
+			showUnfriended();
 		}
 	};
 
@@ -121,10 +122,21 @@ public class FriendWatcherActivity extends Activity {
 		} else if (!c2dmRegistered()) {
 			// Register a receiver to provide register/unregister notifications
 			registerC2DM();
-		}
-		showUnfriended();
+			startLoading();
+		} else 
+			showUnfriended();
 	}
 
+	ProgressDialog progressDialog;
+
+	public void startLoading() {
+		progressDialog = ProgressDialog.show(this, null, "Loading");
+	}
+
+	public void stopLoading() {
+		progressDialog.dismiss();
+	}
+	
 	private void doFbAuth() {
 		//first clear registration id so we'll reregister with new fb creds
 		SharedPreferences settings = Util.getSharedPreferences(this);
