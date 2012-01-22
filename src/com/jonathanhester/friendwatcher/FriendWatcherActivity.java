@@ -15,8 +15,6 @@
  */
 package com.jonathanhester.friendwatcher;
 
-import android.app.Activity;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -33,6 +31,7 @@ import android.webkit.WebView;
 import android.widget.Button;
 
 import com.facebook.android.Facebook;
+import com.google.android.apps.analytics.easytracking.TrackedActivity;
 import com.google.web.bindery.requestfactory.shared.Receiver;
 import com.google.web.bindery.requestfactory.shared.ServerFailure;
 import com.jonathanhester.c2dm.C2DMessaging;
@@ -43,7 +42,7 @@ import com.jonathanhester.friendwatcher.shared.FriendWatcherRequest;
  * Main activity - requests "Hello, World" messages from the server and provides
  * a menu item to invoke the accounts activity.
  */
-public class FriendWatcherActivity extends Activity {
+public class FriendWatcherActivity extends TrackedActivity {
 	/**
 	 * Tag for logging.
 	 */
@@ -83,6 +82,7 @@ public class FriendWatcherActivity extends Activity {
 	};
 
 	private void c2dmError() {
+		Tracker.getInstance().requestFail(Tracker.TYPE_C2DM);
 		Button c2dmReg = (Button) findViewById(R.id.c2dm_reg);
 		c2dmReg.setOnClickListener(new OnClickListener() {
 
@@ -99,20 +99,26 @@ public class FriendWatcherActivity extends Activity {
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
 		setContentView(R.layout.friend_watcher);
 		Button c2dmReg = (Button) findViewById(R.id.c2dm_reg);
 		c2dmReg.setVisibility(View.GONE);
 		Log.i(TAG, "onCreate");
-		super.onCreate(savedInstanceState);
 
 		registerReceiver(mUpdateUIReceiver, new IntentFilter(
 				Util.UPDATE_UI_INTENT));
 		
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
 		if (authedFb()) {
 			verifyServerToken();
 		}
 	}
-
+	
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -130,10 +136,12 @@ public class FriendWatcherActivity extends Activity {
 	ProgressDialog progressDialog;
 
 	public void startLoading() {
+		Tracker.getInstance().startTimeEvent(Tracker.TYPE_TIME_LOADING);
 		progressDialog = ProgressDialog.show(this, null, "Loading");
 	}
 
 	public void stopLoading() {
+		Tracker.getInstance().stopTimeEvent(Tracker.TYPE_TIME_LOADING);
 		progressDialog.dismiss();
 	}
 	
@@ -150,11 +158,10 @@ public class FriendWatcherActivity extends Activity {
 	private boolean authedFb() {
 		String accessToken = Util.getSharedPreferences(mContext).getString(
 				Util.ACCESS_TOKEN, null);
+		Tracker.getInstance().authed(accessToken);
 		if (accessToken == null)
 			return false;
-
 		return true;
-
 	}
 
 	private void verifyServerToken() {
@@ -166,14 +173,16 @@ public class FriendWatcherActivity extends Activity {
 				MyRequestFactory.class);
 		final FriendWatcherRequest request = requestFactory
 				.friendWatcherRequest();
+		Tracker.getInstance().requestStart(Tracker.TYPE_REQUEST_VERIFY);
 		request.verifyToken(fbId, accessToken).fire(new Receiver<Boolean>() {
 			@Override
 			public void onFailure(ServerFailure failure) {
-
+				Tracker.getInstance().requestFail(Tracker.TYPE_REQUEST_VERIFY, 0);
 			}
 
 			@Override
 			public void onSuccess(Boolean response) {
+				Tracker.getInstance().requestSuccess(Tracker.TYPE_REQUEST_VERIFY, response.booleanValue());
 				if (!response.booleanValue()) {
 					FacebookFriendsChecker.saveFbCreds(mContext, null, null);
 					doFbAuth();
@@ -186,6 +195,7 @@ public class FriendWatcherActivity extends Activity {
 	private boolean c2dmRegistered() {
 		String deviceRegistrationId = Util.getSharedPreferences(mContext)
 				.getString(Util.DEVICE_REGISTRATION_ID, null);
+		Tracker.getInstance().requestSuccess(Tracker.TYPE_C2DM, (deviceRegistrationId != null));
 		if (deviceRegistrationId == null)
 			return false;
 		return true;
@@ -210,12 +220,14 @@ public class FriendWatcherActivity extends Activity {
 	}
 
 	private void registerC2DM() {
+		Tracker.getInstance().requestStart(Tracker.TYPE_C2DM);
 		C2DMessaging.register(mContext, Setup.SENDER_ID);
 	}
 
 	Facebook facebook = new Facebook(Util.getFacebookId());
 
 	private void showUnfriended() {
+		Tracker.getInstance().loadIframe();
 		String url = Util.getIframeUrl(mContext);
 		WebView iframe = (WebView) findViewById(R.id.iframe);
 		iframe.getSettings().setJavaScriptEnabled(true);

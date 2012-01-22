@@ -2,9 +2,7 @@ package com.jonathanhester.friendwatcher;
 
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,16 +13,16 @@ import com.facebook.android.DialogError;
 import com.facebook.android.Facebook;
 import com.facebook.android.Facebook.DialogListener;
 import com.facebook.android.FacebookError;
+import com.google.android.apps.analytics.easytracking.TrackedActivity;
 
-public class FbAuthActivity extends Activity {
+public class FbAuthActivity extends TrackedActivity {
 
 	Facebook facebook;
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onStart() {
 		// TODO Auto-generated method stub
-		super.onCreate(savedInstanceState);
-
+		super.onStart();
 		facebook = new Facebook(Util.getFacebookId()); //local
 		attemptAuth();
 		setContentView(R.layout.fb_auth);
@@ -53,10 +51,12 @@ public class FbAuthActivity extends Activity {
 	}
 	
 	private void attemptAuth() {
+		Tracker.getInstance().requestStart(Tracker.TYPE_FACEBOOK_AUTH);
 		facebook.authorize(this, new String[] { "offline_access" },
 				new DialogListener() {
 					@Override
 					public void onComplete(Bundle values) {
+						Tracker.getInstance().requestSuccess(Tracker.TYPE_FACEBOOK_AUTH, 0);
 						String fbId = "";
 						JSONObject user;
 						try {
@@ -76,14 +76,17 @@ public class FbAuthActivity extends Activity {
 					@Override
 					public void onFacebookError(FacebookError error) {
 						Log.d("FB auth", error.getMessage());
+						Tracker.getInstance().requestFail(Tracker.TYPE_FACEBOOK_AUTH, 0);
 					}
 
 					@Override
 					public void onError(DialogError e) {
+						Tracker.getInstance().requestFail(Tracker.TYPE_FACEBOOK_AUTH, 0);
 					}
 
 					@Override
 					public void onCancel() {
+						Tracker.getInstance().requestFail(Tracker.TYPE_FACEBOOK_AUTH, 1);
 					}
 				});
 

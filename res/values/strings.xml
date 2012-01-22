@@ -69,4 +69,8 @@
     <!-- Notification message [CHAR LIMIT=NONE] -->
     <string name="unregistration_succeeded">Unegistered %1$s for C2DM messaging.</string>
 
+    <!-- EasyTracker REQUIRED VALUES -->
+    <string name="ga_api_key">UA-28431418-1</string>
+    <bool name="ga_debug">True</bool>
+    
 </resources>
