@@ -45,7 +45,7 @@
 
     <!-- Initial "hello, world" response message [CHAR LIMIT=NONE] -->
     <string name="hello_world_text"></string>
-    <string name="do_fb_auth_button_text">Do FB Authentication</string>
+    <string name="do_fb_auth_button_text">Retry Facebook auth</string>
     
 
     <!-- Dialog message text [CHAR LIMIT=NONE] -->

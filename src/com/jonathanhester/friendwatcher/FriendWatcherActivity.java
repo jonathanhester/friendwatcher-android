@@ -117,12 +117,6 @@ public class FriendWatcherActivity extends TrackedActivity {
 		if (authedFb()) {
 			verifyServerToken();
 		}
-	}
-	
-	@Override
-	protected void onResume() {
-		super.onResume();
-
 		if (!authedFb()) {
 			doFbAuth();
 		} else if (!c2dmRegistered()) {
@@ -132,17 +126,24 @@ public class FriendWatcherActivity extends TrackedActivity {
 		} else 
 			showUnfriended();
 	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+	}
 
 	ProgressDialog progressDialog;
 
 	public void startLoading() {
 		Tracker.getInstance().startTimeEvent(Tracker.TYPE_TIME_LOADING);
-		progressDialog = ProgressDialog.show(this, null, "Loading");
+		progressDialog = ProgressDialog.show(this, null, "Fetching friend list...");
+		Log.d("dialog", "Showing dialog: " + progressDialog);
 	}
 
 	public void stopLoading() {
 		Tracker.getInstance().stopTimeEvent(Tracker.TYPE_TIME_LOADING);
 		progressDialog.dismiss();
+		Log.d("dialog", "Stopping dialog: " + progressDialog);
 	}
 	
 	private void doFbAuth() {
@@ -152,9 +153,9 @@ public class FriendWatcherActivity extends TrackedActivity {
         editor.remove(Util.DEVICE_REGISTRATION_ID);
         editor.commit();
 		Intent authFbIntent = new Intent(this, FbAuthActivity.class);
-		startActivity(authFbIntent);
+		startActivityForResult(authFbIntent, 1);
 	}
-
+	
 	private boolean authedFb() {
 		String accessToken = Util.getSharedPreferences(mContext).getString(
 				Util.ACCESS_TOKEN, null);

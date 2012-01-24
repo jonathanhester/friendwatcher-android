@@ -2,6 +2,7 @@ package com.jonathanhester.friendwatcher;
 
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,11 +21,9 @@ public class FbAuthActivity extends TrackedActivity {
 	Facebook facebook;
 
 	@Override
-	protected void onStart() {
+	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
-		super.onStart();
-		facebook = new Facebook(Util.getFacebookId()); //local
-		attemptAuth();
+		super.onCreate(savedInstanceState);
 		setContentView(R.layout.fb_auth);
 		
 		Button button = (Button)findViewById(R.id.do_fb_auth);
@@ -33,9 +32,16 @@ public class FbAuthActivity extends TrackedActivity {
 			@Override
 			public void onClick(View v) {
 				attemptAuth();
-				
 			}
 		});
+	}
+	
+	@Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		super.onStart();
+		facebook = new Facebook(Util.getFacebookId()); //local
+		attemptAuth();
 	}
 
 	@Override
@@ -70,6 +76,7 @@ public class FbAuthActivity extends TrackedActivity {
 						}
 
 						FacebookFriendsChecker.saveFbCreds(FbAuthActivity.this, facebook.getAccessToken(), fbId);
+						setResult(Activity.RESULT_OK);
 						finish();
 					}
 
