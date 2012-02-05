@@ -114,9 +114,6 @@ public class FriendWatcherActivity extends TrackedActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		if (authedFb()) {
-			verifyServerToken();
-		}
 		if (!authedFb()) {
 			doFbAuth();
 		} else if (!c2dmRegistered()) {
@@ -124,6 +121,7 @@ public class FriendWatcherActivity extends TrackedActivity {
 			registerC2DM();
 			startLoading();
 		} else 
+			verifyServerToken();
 			showUnfriended();
 	}
 	
