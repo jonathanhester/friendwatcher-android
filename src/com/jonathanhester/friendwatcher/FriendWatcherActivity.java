@@ -120,9 +120,10 @@ public class FriendWatcherActivity extends TrackedActivity {
 			// Register a receiver to provide register/unregister notifications
 			registerC2DM();
 			startLoading();
-		} else 
+		} else {
 			verifyServerToken();
 			showUnfriended();
+		}
 	}
 	
 	@Override

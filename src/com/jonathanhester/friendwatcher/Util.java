@@ -143,8 +143,9 @@ public class Util {
 		String url = URL_MAP.get(context);
 		if (url == null) {
 			// if a debug_url raw resource exists, use its contents as the url
-			if (getEnvironment() == ENVIRONMENT_LOCAL)
+			if (getEnvironment() == ENVIRONMENT_LOCAL) {
 				url = getDebugUrl(context);
+			}
 			// otherwise, use the production url
 			if (url == null) {
 				url = Setup.PROD_URL;

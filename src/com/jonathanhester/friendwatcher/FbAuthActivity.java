@@ -20,13 +20,15 @@ public class FbAuthActivity extends TrackedActivity {
 
 	Facebook facebook;
 
+	Button button;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.fb_auth);
 		
-		Button button = (Button)findViewById(R.id.do_fb_auth);
+		button = (Button)findViewById(R.id.do_fb_auth);
+		button.setVisibility(View.INVISIBLE);
 		button.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -84,6 +86,7 @@ public class FbAuthActivity extends TrackedActivity {
 					public void onFacebookError(FacebookError error) {
 						Log.d("FB auth", error.getMessage());
 						Tracker.getInstance().requestFail(Tracker.TYPE_FACEBOOK_AUTH, 0);
+						button.setVisibility(View.VISIBLE);
 					}
 
 					@Override
