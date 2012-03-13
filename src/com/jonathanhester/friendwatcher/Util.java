@@ -53,8 +53,8 @@ public class Util {
 	private static final String ENVIRONMENT_PROD = "prod";
 	private static final String ENVIRONMENT_LOCAL = "local1";
 	
-	private static final String ENVIRONMENT = ENVIRONMENT_PROD;
-	//private static final String ENVIRONMENT = ENVIRONMENT_LOCAL;
+	//private static final String ENVIRONMENT = ENVIRONMENT_PROD;
+	private static final String ENVIRONMENT = ENVIRONMENT_LOCAL;
 
 	// Shared constants
 
