@@ -35,7 +35,7 @@
 		<link>
 			<name>shared</name>
 			<type>2</type>
-			<locationURI>WORKSPACE_LOC/FriendWatcher-AppEngine/shared</locationURI>
+			<location>/home/jonathan/workspace/FriendWatcher-AppEngine/shared</location>
 		</link>
 	</linkedResources>
 </projectDescription>
