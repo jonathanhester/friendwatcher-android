@@ -23,8 +23,16 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONObject;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -53,8 +61,8 @@ public class Util {
 	private static final String ENVIRONMENT_PROD = "prod";
 	private static final String ENVIRONMENT_LOCAL = "local1";
 	
-	private static final String ENVIRONMENT = ENVIRONMENT_PROD;
-	//private static final String ENVIRONMENT = ENVIRONMENT_LOCAL;
+	//private static final String ENVIRONMENT = ENVIRONMENT_PROD;
+	private static final String ENVIRONMENT = ENVIRONMENT_LOCAL;
 
 	// Shared constants
 
@@ -192,7 +200,7 @@ public class Util {
 
 		return requestFactory;
 	}
-
+	
 	/**
 	 * Helper method to get a SharedPreferences instance.
 	 */
@@ -208,7 +216,8 @@ public class Util {
 		// of caching the result.
 		return !Setup.PROD_URL.equals(getBaseUrl(context));
 	}
-
+	
+	
 	/**
 	 * Returns a debug url, or null. To set the url, create a file
 	 * {@code assets/debugging_prefs.properties} with a line of the form
@@ -260,7 +269,7 @@ public class Util {
 		String fbId = sharedPrefs.getString(Util.ACCOUNT_NAME, null);
 		
 		String url = getBaseUrl(context);
-		String local = "/FriendWatcher.html?gwt.codesvr=127.0.0.1:9997";
+		String local = "/FriendWatcher.html?";
 		String prod = "/FriendWatcher.html?";
 		if (getEnvironment() == ENVIRONMENT_LOCAL)
 			url += local;

@@ -15,19 +15,19 @@
  */
 package com.jonathanhester.friendwatcher;
 
-import com.google.web.bindery.requestfactory.shared.Receiver;
-import com.google.web.bindery.requestfactory.shared.Request;
-import com.google.web.bindery.requestfactory.shared.ServerFailure;
-
-import com.jonathanhester.friendwatcher.client.MyRequestFactory;
-import com.jonathanhester.friendwatcher.client.MyRequestFactory.RegistrationInfoRequest;
-import com.jonathanhester.friendwatcher.shared.RegistrationInfoProxy;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.provider.Settings.Secure;
 import android.util.Log;
+
+import com.androidquery.AQuery;
+import com.jonathanhester.friendwatcher.requests.MyRequestFactory;
+import com.jonathanhester.friendwatcher.requests.RegistrationInfoProxy;
+import com.jonathanhester.friendwatcher.requests.RegistrationInfoRequest;
+import com.jonathanhester.requestFactory.Receiver;
+import com.jonathanhester.requestFactory.Request;
+import com.jonathanhester.requestFactory.ServerFailure;
 
 /**
  * Register/unregister with the third-party App Engine server using
@@ -52,14 +52,15 @@ public class DeviceRegistrar {
         String accountName = prefs.getString(Util.ACCOUNT_NAME, null);
         String accessToken = prefs.getString(Util.ACCESS_TOKEN, null);
 
-        RegistrationInfoRequest request = getRequest(context);
-        RegistrationInfoProxy proxy = request.create(RegistrationInfoProxy.class);
-        proxy.setDeviceRegistrationId(deviceRegistrationId);
-        proxy.setAccountName(accountName);
+        RegistrationInfoProxy proxy = new RegistrationInfoProxy();
+        proxy.setRegistrationId(deviceRegistrationId);
+        proxy.setFbid(accountName);
         proxy.setAccessToken(accessToken);
 
         String deviceId = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
         proxy.setDeviceId(deviceId);
+
+        RegistrationInfoRequest request = MyRequestFactory.registrationInfoRequest(context, proxy);
 
         Request<Void> req;
         if (register) {
@@ -93,9 +94,4 @@ public class DeviceRegistrar {
         });
     }
 
-    private static RegistrationInfoRequest getRequest(Context context) {
-        MyRequestFactory requestFactory = Util.getRequestFactory(context, MyRequestFactory.class);
-        RegistrationInfoRequest request = requestFactory.registrationInfoRequest();
-        return request;
-    }
 }

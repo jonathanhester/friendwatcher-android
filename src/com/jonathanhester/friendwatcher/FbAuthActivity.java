@@ -46,18 +46,6 @@ public class FbAuthActivity extends TrackedActivity {
 		attemptAuth();
 	}
 
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-
-		facebook.authorizeCallback(requestCode, resultCode, data);
-	
-		String friendsData = FacebookFriendsChecker
-				.getFriendsFromFacebookJson(facebook);
-
-		FacebookFriendsChecker.storeFriendsData(this, friendsData);
-	}
-	
 	private void attemptAuth() {
 		Tracker.getInstance().requestStart(Tracker.TYPE_FACEBOOK_AUTH);
 		facebook.authorize(this, new String[] { "offline_access" },

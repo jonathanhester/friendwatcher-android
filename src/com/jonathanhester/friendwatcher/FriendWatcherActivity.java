@@ -32,11 +32,11 @@ import android.widget.Button;
 
 import com.facebook.android.Facebook;
 import com.google.android.apps.analytics.easytracking.TrackedActivity;
-import com.google.web.bindery.requestfactory.shared.Receiver;
-import com.google.web.bindery.requestfactory.shared.ServerFailure;
 import com.jonathanhester.c2dm.C2DMessaging;
-import com.jonathanhester.friendwatcher.client.MyRequestFactory;
-import com.jonathanhester.friendwatcher.shared.FriendWatcherRequest;
+import com.jonathanhester.friendwatcher.requests.FriendWatcherRequest;
+import com.jonathanhester.friendwatcher.requests.MyRequestFactory;
+import com.jonathanhester.requestFactory.Receiver;
+import com.jonathanhester.requestFactory.ServerFailure;
 
 /**
  * Main activity - requests "Hello, World" messages from the server and provides
@@ -77,7 +77,8 @@ public class FriendWatcherActivity extends TrackedActivity {
 			// Display a notification
 			SharedPreferences prefs = Util.getSharedPreferences(mContext);
 			stopLoading();
-			showUnfriended();
+			if (status == DeviceRegistrar.REGISTERED_STATUS) 
+				showUnfriended();
 		}
 	};
 
@@ -163,16 +164,13 @@ public class FriendWatcherActivity extends TrackedActivity {
 			return false;
 		return true;
 	}
-
+	
 	private void verifyServerToken() {
 		String accessToken = Util.getSharedPreferences(mContext).getString(
 				Util.ACCESS_TOKEN, null);
 		String fbId = Util.getSharedPreferences(mContext).getString(
 				Util.ACCOUNT_NAME, null);
-		MyRequestFactory requestFactory = Util.getRequestFactory(mContext,
-				MyRequestFactory.class);
-		final FriendWatcherRequest request = requestFactory
-				.friendWatcherRequest();
+		final FriendWatcherRequest request = MyRequestFactory.friendWatcherRequest(mContext);
 		Tracker.getInstance().requestStart(Tracker.TYPE_REQUEST_VERIFY);
 		request.verifyToken(fbId, accessToken).fire(new Receiver<Boolean>() {
 			@Override
@@ -189,7 +187,6 @@ public class FriendWatcherActivity extends TrackedActivity {
 				}
 			}
 		});
-
 	}
 
 	private boolean c2dmRegistered() {
