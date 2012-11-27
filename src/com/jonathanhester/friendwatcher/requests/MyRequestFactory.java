@@ -11,9 +11,9 @@ public class MyRequestFactory {
 		return new FriendWatcherRequest(context, path);
 	}
 	
-	public static RegistrationInfoRequest registrationInfoRequest(Context context, RegistrationInfoProxy proxy) {
+	public static RegistrationInfoRequest registrationInfoRequest(Context context) {
 		String path = Util.getBaseUrl(context);
-		return new RegistrationInfoRequest(context, path, proxy);
+		return new RegistrationInfoRequest(context, path);
 	}
 
 }

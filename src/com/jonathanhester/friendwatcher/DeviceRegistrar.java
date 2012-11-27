@@ -49,27 +49,21 @@ public class DeviceRegistrar {
         final Intent updateUIIntent = new Intent(Util.UPDATE_UI_INTENT);
 
         SharedPreferences prefs = Util.getSharedPreferences(context);
-        String accountName = prefs.getString(Util.ACCOUNT_NAME, null);
-        String accessToken = prefs.getString(Util.ACCESS_TOKEN, null);
-
-        RegistrationInfoProxy proxy = new RegistrationInfoProxy();
-        proxy.setRegistrationId(deviceRegistrationId);
-        proxy.setFbid(accountName);
-        proxy.setAccessToken(accessToken);
+        String fbId = prefs.getString(Util.FBID, null);
+        String token = prefs.getString(Util.TOKEN, null);
 
         String deviceId = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
-        proxy.setDeviceId(deviceId);
 
-        RegistrationInfoRequest request = MyRequestFactory.registrationInfoRequest(context, proxy);
+        RegistrationInfoRequest request = MyRequestFactory.registrationInfoRequest(context);
 
-        Request<Void> req;
+        Request<String> req;
         if (register) {
-            req = request.register().using(proxy);
+            req = request.register(fbId, token, deviceRegistrationId, deviceId);
         } else {
-            req = request.unregister().using(proxy);
+            req = request.unregister(fbId, token, deviceRegistrationId, deviceId);
         }
 
-        req.fire(new Receiver<Void>() {
+        req.fire(new Receiver<String>() {
             @Override
             public void onFailure(ServerFailure failure) {
                 Log.w(TAG, "Failure, got :" + failure.getMessage());
@@ -78,7 +72,7 @@ public class DeviceRegistrar {
             }
 
             @Override
-            public void onSuccess(Void response) {
+            public void onSuccess(String response) {
                 SharedPreferences settings = Util.getSharedPreferences(context);
                 SharedPreferences.Editor editor = settings.edit();
                 if (register) {

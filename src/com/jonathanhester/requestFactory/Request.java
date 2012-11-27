@@ -44,12 +44,7 @@ public class Request<T> {
 		return path + "?" + getParams();
 	}
 	
-	public Request<T> using(RequestProxyObject proxy) {
-		this.proxy = proxy;
-		return this;
-	}
-	
-	public void fire(Receiver<T> receiver) {
+	public void fire(Receiver<String> receiver) {
 		DefaultHttpClient httpclient = new DefaultHttpClient();
 		HttpRequestBase httpMethod;
 		if (method == "GET") {
@@ -77,11 +72,12 @@ public class Request<T> {
 
 			ResponseHandler responseHandler = new BasicResponseHandler();
 			String response = httpclient.execute(httpMethod, responseHandler);
-			receiver.onSuccess(null);
+			receiver.onSuccess(response);
 		} catch (Exception e) {
 			receiver.onFailure(new ServerFailure(""));
 		}
 		
 	}
 	
+
 }

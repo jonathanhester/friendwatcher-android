@@ -69,30 +69,16 @@ public class Util {
 	/**
 	 * Key for account name in shared preferences.
 	 */
-	public static final String ACCOUNT_NAME = "accountNamev2";
+	public static final String FBID = "fbid";
 
-	public static final String ACCESS_TOKEN = "accessTokenv2";
+	public static final String TOKEN = "token";
 	
-	public static final String ACCOUNT_NAME_TEMP = "accountNamev2_temp";
-
-	public static final String ACCESS_TOKEN_TEMP = "accessTokenv2_temp";
-
-	public static final String FRIEND_IDS = "friendIds";
-
-	/**
-	 * Key for auth cookie name in shared preferences.
-	 */
-	public static final String AUTH_COOKIE = "authCookie";
+	public static final String USER_ID = "userId";
 
 	/**
 	 * Key for device registration id in shared preferences.
 	 */
 	public static final String DEVICE_REGISTRATION_ID = "deviceRegistrationID";
-
-	/*
-	 * URL suffix for the RequestFactory servlet.
-	 */
-	public static final String RF_METHOD = "/gwtRequest";
 
 	/**
 	 * An intent name for receiving registration/unregistration status.
@@ -142,7 +128,7 @@ public class Util {
 		editor.putInt("notificationID", ++notificatonID % 32);
 		editor.commit();
 	}
-
+	
 	/**
 	 * Returns the (debug or production) URL associated with the registration
 	 * service.
@@ -177,37 +163,12 @@ public class Util {
 	}
 	
 	/**
-	 * Creates and returns an initialized {@link RequestFactory} of the given
-	 * type.
-	 */
-	public static <T extends RequestFactory> T getRequestFactory(
-			Context context, Class<T> factoryClass) {
-		T requestFactory = RequestFactorySource.create(factoryClass);
-
-		SharedPreferences prefs = getSharedPreferences(context);
-		String authCookie = prefs.getString(Util.AUTH_COOKIE, null);
-
-		String uriString = Util.getBaseUrl(context) + RF_METHOD;
-		URI uri;
-		try {
-			uri = new URI(uriString);
-		} catch (URISyntaxException e) {
-			Log.w(TAG, "Bad URI: " + uriString, e);
-			return null;
-		}
-		requestFactory.initialize(new SimpleEventBus(),
-				new AndroidRequestTransport(uri, authCookie));
-
-		return requestFactory;
-	}
-	
-	/**
 	 * Helper method to get a SharedPreferences instance.
 	 */
 	public static SharedPreferences getSharedPreferences(Context context) {
 		return context.getSharedPreferences(SHARED_PREFS, 0);
 	}
-
+	
 	/**
 	 * Returns true if we are running against a dev mode appengine instance.
 	 */
@@ -265,8 +226,8 @@ public class Util {
 	
 	public static String getIframeUrl(Context context ) {
 		SharedPreferences sharedPrefs = getSharedPreferences(context);
-		String accessToken = sharedPrefs.getString(Util.ACCESS_TOKEN, null);
-		String fbId = sharedPrefs.getString(Util.ACCOUNT_NAME, null);
+		String accessToken = sharedPrefs.getString(Util.TOKEN, null);
+		String fbId = sharedPrefs.getString(Util.FBID, null);
 		
 		String url = getBaseUrl(context);
 		String local = "/FriendWatcher.html?";

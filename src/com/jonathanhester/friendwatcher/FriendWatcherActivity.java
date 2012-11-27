@@ -29,7 +29,9 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.Toast;
 
+import com.androidquery.AQuery;
 import com.facebook.android.Facebook;
 import com.google.android.apps.analytics.easytracking.TrackedActivity;
 import com.jonathanhester.c2dm.C2DMessaging;
@@ -115,12 +117,17 @@ public class FriendWatcherActivity extends TrackedActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
+		reloadState();
+	}
+	
+	private void reloadState() {
 		if (!authedFb()) {
 			doFbAuth();
+		} else if (Util.getSharedPreferences(mContext).getString(Util.USER_ID, null) == null) {
+			createUser();
 		} else if (!c2dmRegistered()) {
 			// Register a receiver to provide register/unregister notifications
 			registerC2DM();
-			startLoading();
 		} else {
 			verifyServerToken();
 			showUnfriended();
@@ -134,9 +141,9 @@ public class FriendWatcherActivity extends TrackedActivity {
 
 	ProgressDialog progressDialog;
 
-	public void startLoading() {
+	public void startLoading(String message) {
 		Tracker.getInstance().startTimeEvent(Tracker.TYPE_TIME_LOADING);
-		progressDialog = ProgressDialog.show(this, null, "Fetching friend list...");
+		progressDialog = ProgressDialog.show(this, null, message);
 		Log.d("dialog", "Showing dialog: " + progressDialog);
 	}
 
@@ -144,6 +151,40 @@ public class FriendWatcherActivity extends TrackedActivity {
 		Tracker.getInstance().stopTimeEvent(Tracker.TYPE_TIME_LOADING);
 		progressDialog.dismiss();
 		Log.d("dialog", "Stopping dialog: " + progressDialog);
+	}
+	
+	public void createUser() {
+		startLoading("Validating Facebook user...");
+		final FriendWatcherRequest request = MyRequestFactory.friendWatcherRequest(mContext);
+		request.validateUser(fbId(), token()).fire(new Receiver<String>() {
+			@Override
+			public void onFailure(ServerFailure failure) {
+				Tracker.getInstance().requestFail(Tracker.TYPE_REQUEST_VALIDATE_USER, 0);
+				stopLoading();
+				saveFbCreds(null, null);
+				doFbAuth();
+			}
+
+			@Override
+			public void onSuccess(String response) {
+				Tracker.getInstance().requestSuccess(Tracker.TYPE_REQUEST_VALIDATE_USER, response.equals("1"));
+				stopLoading();
+
+				if (!response.equals("1")) {
+					Toast.makeText(mContext, "Unable to verify user. Let's try again", Toast.LENGTH_SHORT).show();
+					saveFbCreds(null, null);
+					doFbAuth();
+				} else {
+					SharedPreferences settings = Util.getSharedPreferences(mContext);
+			        SharedPreferences.Editor editor = settings.edit();
+			        editor.putString(Util.USER_ID, response);
+			        editor.commit();
+					Toast.makeText(mContext, "Success!", Toast.LENGTH_SHORT).show();
+					reloadState();
+				}
+			}
+		});
+
 	}
 	
 	private void doFbAuth() {
@@ -156,37 +197,61 @@ public class FriendWatcherActivity extends TrackedActivity {
 		startActivityForResult(authFbIntent, 1);
 	}
 	
+	@Override 
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {     
+	  super.onActivityResult(requestCode, resultCode, data);
+	  String fbId = data.getStringExtra(Util.FBID);
+	  String token = data.getStringExtra(Util.TOKEN);
+	  saveFbCreds(token, fbId);
+	  reloadState();
+	}
+	
 	private boolean authedFb() {
-		String accessToken = Util.getSharedPreferences(mContext).getString(
-				Util.ACCESS_TOKEN, null);
-		Tracker.getInstance().authed(accessToken);
-		if (accessToken == null)
+		String token = token();
+		Tracker.getInstance().authed(token);
+		if (token == null)
 			return false;
 		return true;
 	}
 	
+	private String token() {
+		return Util.getSharedPreferences(mContext).getString(Util.TOKEN, null);
+	}
+	
+	private String fbId() {
+		return Util.getSharedPreferences(mContext).getString(Util.FBID, null);
+	}
+	
 	private void verifyServerToken() {
 		String accessToken = Util.getSharedPreferences(mContext).getString(
-				Util.ACCESS_TOKEN, null);
+				Util.TOKEN, null);
 		String fbId = Util.getSharedPreferences(mContext).getString(
-				Util.ACCOUNT_NAME, null);
+				Util.FBID, null);
 		final FriendWatcherRequest request = MyRequestFactory.friendWatcherRequest(mContext);
 		Tracker.getInstance().requestStart(Tracker.TYPE_REQUEST_VERIFY);
-		request.verifyToken(fbId, accessToken).fire(new Receiver<Boolean>() {
+		request.verifyToken(fbId, accessToken).fire(new Receiver<String>() {
 			@Override
 			public void onFailure(ServerFailure failure) {
 				Tracker.getInstance().requestFail(Tracker.TYPE_REQUEST_VERIFY, 0);
 			}
 
 			@Override
-			public void onSuccess(Boolean response) {
-				Tracker.getInstance().requestSuccess(Tracker.TYPE_REQUEST_VERIFY, response.booleanValue());
-				if (!response.booleanValue()) {
-					FacebookFriendsChecker.saveFbCreds(mContext, null, null);
+			public void onSuccess(String response) {
+				Tracker.getInstance().requestSuccess(Tracker.TYPE_REQUEST_VERIFY, response.equals("1"));
+				if (!response.equals("1")) {
+					saveFbCreds(null, null);
 					doFbAuth();
 				}
 			}
 		});
+	}
+	
+	private void saveFbCreds(String token, String fbId) {
+		final SharedPreferences prefs = Util.getSharedPreferences(this);
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString(Util.TOKEN, token);
+		editor.putString(Util.FBID, fbId);
+		editor.commit();
 	}
 
 	private boolean c2dmRegistered() {
@@ -229,25 +294,6 @@ public class FriendWatcherActivity extends TrackedActivity {
 		WebView iframe = (WebView) findViewById(R.id.iframe);
 		iframe.getSettings().setJavaScriptEnabled(true);
 		iframe.loadUrl(url);
-
-		// diffedFriends.setAdapter(adapter);
-		// String accessToken = Util.getSharedPreferences(mContext).getString(
-		// Util.ACCESS_TOKEN, null);
-		//
-		// facebook.setAccessToken(accessToken);
-		// String friendJson = FacebookFriendsChecker
-		// .getFriendsFromFacebookJson(facebook);
-		// ArrayList<FacebookUser> friendsList = FacebookFriendsChecker
-		// .getFriendsFromJson(friendJson);
-		// ArrayList<FacebookUser> unfriendedList = FacebookFriendsChecker
-		// .getDiffedFriendsList(facebook, this, friendsList);
-		//
-		// FacebookFriendsChecker.storeFriendsData(this, friendJson);
-		//
-		// ListView diffedFriends = (ListView) findViewById(R.id.facebookUsers);
-		// FacebookUserListAdapter adapter = new FacebookUserListAdapter(this,
-		// R.layout.facebook_user, unfriendedList);
-		// diffedFriends.setAdapter(adapter);
 	}
 
 }

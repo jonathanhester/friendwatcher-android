@@ -21,29 +21,36 @@ public class FbAuthActivity extends TrackedActivity {
 	Facebook facebook;
 
 	Button button;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.fb_auth);
-		
-		button = (Button)findViewById(R.id.do_fb_auth);
+
+		button = (Button) findViewById(R.id.do_fb_auth);
 		button.setVisibility(View.INVISIBLE);
 		button.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				attemptAuth();
 			}
 		});
 	}
-	
+
 	@Override
 	protected void onStart() {
 		// TODO Auto-generated method stub
 		super.onStart();
-		facebook = new Facebook(Util.getFacebookId()); //local
+		facebook = new Facebook(Util.getFacebookId()); // local
 		attemptAuth();
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		facebook.authorizeCallback(requestCode, resultCode, data);
 	}
 
 	private void attemptAuth() {
@@ -52,39 +59,45 @@ public class FbAuthActivity extends TrackedActivity {
 				new DialogListener() {
 					@Override
 					public void onComplete(Bundle values) {
-						Tracker.getInstance().requestSuccess(Tracker.TYPE_FACEBOOK_AUTH, 0);
+						Tracker.getInstance().requestSuccess(
+								Tracker.TYPE_FACEBOOK_AUTH, 0);
 						String fbId = "";
 						JSONObject user;
 						try {
 							String response = facebook.request("me");
-							user = com.facebook.android.Util.parseJson(response);
+							user = com.facebook.android.Util
+									.parseJson(response);
 							fbId = (String) user.get("id");
 						} catch (Exception e) {
 							e.getMessage();
-						} catch (FacebookError e) {
-							e.getMessage();
 						}
 
-						FacebookFriendsChecker.saveFbCreds(FbAuthActivity.this, facebook.getAccessToken(), fbId);
-						setResult(Activity.RESULT_OK);
+						Intent resultIntent = new Intent();
+						resultIntent.putExtra(Util.TOKEN,
+								facebook.getAccessToken());
+						resultIntent.putExtra(Util.FBID, fbId);
+						setResult(Activity.RESULT_OK, resultIntent);
 						finish();
 					}
 
 					@Override
 					public void onFacebookError(FacebookError error) {
 						Log.d("FB auth", error.getMessage());
-						Tracker.getInstance().requestFail(Tracker.TYPE_FACEBOOK_AUTH, 0);
+						Tracker.getInstance().requestFail(
+								Tracker.TYPE_FACEBOOK_AUTH, 0);
 						button.setVisibility(View.VISIBLE);
 					}
 
 					@Override
 					public void onError(DialogError e) {
-						Tracker.getInstance().requestFail(Tracker.TYPE_FACEBOOK_AUTH, 0);
+						Tracker.getInstance().requestFail(
+								Tracker.TYPE_FACEBOOK_AUTH, 0);
 					}
 
 					@Override
 					public void onCancel() {
-						Tracker.getInstance().requestFail(Tracker.TYPE_FACEBOOK_AUTH, 1);
+						Tracker.getInstance().requestFail(
+								Tracker.TYPE_FACEBOOK_AUTH, 1);
 					}
 				});
 
