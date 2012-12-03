@@ -48,8 +48,10 @@ public class Tracker {
 		long duration;
 		if (start == null) 
 			duration = 0;
-		Date now = new Date();
-		duration = now.getTime() - start.getTime();
+		else {
+			Date now = new Date();
+			duration = now.getTime() - start.getTime();
+		}
 		tracker.trackEvent("timer", event, "", (int)duration);
 	}
 	

@@ -229,14 +229,8 @@ public class Util {
 		String accessToken = sharedPrefs.getString(Util.TOKEN, null);
 		String fbId = sharedPrefs.getString(Util.FBID, null);
 		
-		String url = getBaseUrl(context);
-		String local = "/FriendWatcher.html?";
-		String prod = "/FriendWatcher.html?";
-		if (getEnvironment() == ENVIRONMENT_LOCAL)
-			url += local;
-		else
-			url += prod;
-		return url + "&fbId=" + fbId + "&token=" + accessToken;
+		String url = getBaseUrl(context) + "/users/" + fbId + "?token=" + accessToken;
+		return url;
 	}
 
 	/**

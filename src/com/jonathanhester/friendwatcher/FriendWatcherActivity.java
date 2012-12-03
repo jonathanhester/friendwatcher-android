@@ -25,13 +25,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.androidquery.AQuery;
 import com.facebook.android.Facebook;
 import com.google.android.apps.analytics.easytracking.TrackedActivity;
 import com.jonathanhester.c2dm.C2DMessaging;
@@ -78,7 +78,6 @@ public class FriendWatcherActivity extends TrackedActivity {
 
 			// Display a notification
 			SharedPreferences prefs = Util.getSharedPreferences(mContext);
-			stopLoading();
 			if (status == DeviceRegistrar.REGISTERED_STATUS) 
 				showUnfriended();
 		}
@@ -161,7 +160,7 @@ public class FriendWatcherActivity extends TrackedActivity {
 			public void onFailure(ServerFailure failure) {
 				Tracker.getInstance().requestFail(Tracker.TYPE_REQUEST_VALIDATE_USER, 0);
 				stopLoading();
-				saveFbCreds(null, null);
+				saveFbCreds(null, null, null);
 				doFbAuth();
 			}
 
@@ -172,7 +171,7 @@ public class FriendWatcherActivity extends TrackedActivity {
 
 				if (!response.equals("1")) {
 					Toast.makeText(mContext, "Unable to verify user. Let's try again", Toast.LENGTH_SHORT).show();
-					saveFbCreds(null, null);
+					saveFbCreds(null, null, null);
 					doFbAuth();
 				} else {
 					SharedPreferences settings = Util.getSharedPreferences(mContext);
@@ -202,7 +201,7 @@ public class FriendWatcherActivity extends TrackedActivity {
 	  super.onActivityResult(requestCode, resultCode, data);
 	  String fbId = data.getStringExtra(Util.FBID);
 	  String token = data.getStringExtra(Util.TOKEN);
-	  saveFbCreds(token, fbId);
+	  saveFbCreds(token, fbId, null);
 	  reloadState();
 	}
 	
@@ -233,24 +232,26 @@ public class FriendWatcherActivity extends TrackedActivity {
 			@Override
 			public void onFailure(ServerFailure failure) {
 				Tracker.getInstance().requestFail(Tracker.TYPE_REQUEST_VERIFY, 0);
+				saveFbCreds(null, null, null);
 			}
 
 			@Override
 			public void onSuccess(String response) {
 				Tracker.getInstance().requestSuccess(Tracker.TYPE_REQUEST_VERIFY, response.equals("1"));
 				if (!response.equals("1")) {
-					saveFbCreds(null, null);
+					saveFbCreds(null, null, null);
 					doFbAuth();
 				}
 			}
 		});
 	}
 	
-	private void saveFbCreds(String token, String fbId) {
+	private void saveFbCreds(String token, String fbId, String userId) {
 		final SharedPreferences prefs = Util.getSharedPreferences(this);
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putString(Util.TOKEN, token);
 		editor.putString(Util.FBID, fbId);
+		editor.putString(Util.USER_ID, userId);
 		editor.commit();
 	}
 
@@ -275,10 +276,20 @@ public class FriendWatcherActivity extends TrackedActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
-		// inflater.inflate(R.menu.main_menu, menu);
-		// Invoke the Register activity
-		// menu.getItem(0).setIntent(new Intent(this, AccountsActivity.class));
+		 inflater.inflate(R.menu.main_menu, menu);
 		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    // Handle item selection
+	    switch (item.getItemId()) {
+	        case R.id.refresh:
+	        	showUnfriended();	        	
+	            return true;
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
 	}
 
 	private void registerC2DM() {

@@ -74,10 +74,10 @@ public class Request<T> {
 			String response = httpclient.execute(httpMethod, responseHandler);
 			receiver.onSuccess(response);
 		} catch (Exception e) {
-			receiver.onFailure(new ServerFailure(""));
+			receiver.onFailure(new ServerFailure(e.getMessage()));
 		}
 		
 	}
-	
+
 
 }
