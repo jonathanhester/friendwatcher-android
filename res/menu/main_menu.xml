@@ -5,5 +5,18 @@
         android:id="@+id/refresh"
         android:icon="@drawable/ic_menu_refresh"
         android:title="Refresh"/>
+    <item
+        android:id="@+id/reconnect"
+        android:icon="@drawable/ic_menu_refresh"
+        android:title="Retry Facebook"/>
+    <item
+        android:id="@+id/refresh_gcm"
+        android:icon="@drawable/ic_menu_refresh"
+        android:title="Refresh GCM"/>
+    
+    <item
+        android:id="@+id/test_push"
+        android:icon="@drawable/ic_menu_refresh"
+        android:title="Test Push Notification"/>
 
 </menu>

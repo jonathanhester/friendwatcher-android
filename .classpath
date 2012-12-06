@@ -12,7 +12,6 @@
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry exported="true" kind="lib" path="/home/jonathan/android-sdk-linux/extras/google/analytics_sdk/libGoogleAnalytics.jar"/>
-	<classpathentry exported="true" kind="lib" path="/EasyTracker/bin/easytracker.jar"/>
 	<classpathentry kind="lib" path="android-query-full.0.24.2-beta.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

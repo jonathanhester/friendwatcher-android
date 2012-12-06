@@ -103,6 +103,8 @@ public class FriendWatcherActivity extends TrackedActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		startActivity(new Intent(this, Welcome.class));
+		
 		setContentView(R.layout.friend_watcher);
 		Button c2dmReg = (Button) findViewById(R.id.c2dm_reg);
 		c2dmReg.setVisibility(View.GONE);
@@ -142,7 +144,7 @@ public class FriendWatcherActivity extends TrackedActivity {
 
 	public void startLoading(String message) {
 		Tracker.getInstance().startTimeEvent(Tracker.TYPE_TIME_LOADING);
-		progressDialog = ProgressDialog.show(this, null, message);
+		progressDialog = ProgressDialog.show(this, "", message);
 		Log.d("dialog", "Showing dialog: " + progressDialog);
 	}
 
@@ -276,7 +278,7 @@ public class FriendWatcherActivity extends TrackedActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
-		 inflater.inflate(R.menu.main_menu, menu);
+		inflater.inflate(R.menu.main_menu, menu);
 		return true;
 	}
 	
@@ -287,6 +289,12 @@ public class FriendWatcherActivity extends TrackedActivity {
 	        case R.id.refresh:
 	        	showUnfriended();	        	
 	            return true;
+	        case R.id.reconnect:
+	        	reconnectToFb();	        	
+	            return true;
+	        case R.id.refresh_gcm:
+	        	registerC2DM();	        	
+	            return true;	            
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
@@ -305,6 +313,11 @@ public class FriendWatcherActivity extends TrackedActivity {
 		WebView iframe = (WebView) findViewById(R.id.iframe);
 		iframe.getSettings().setJavaScriptEnabled(true);
 		iframe.loadUrl(url);
+	}
+	
+	private void reconnectToFb() {
+		saveFbCreds(null, null, null);
+		reloadState();
 	}
 
 }
