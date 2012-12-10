@@ -15,6 +15,10 @@
  */
 package com.jonathanhester.friendwatcher;
 
+import java.util.ArrayList;
+import java.util.Date;
+
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -22,18 +26,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.Toast;
 
 import com.facebook.android.Facebook;
-import com.google.android.apps.analytics.easytracking.TrackedActivity;
 import com.jonathanhester.c2dm.C2DMessaging;
 import com.jonathanhester.friendwatcher.requests.FriendWatcherRequest;
 import com.jonathanhester.friendwatcher.requests.MyRequestFactory;
@@ -44,7 +47,7 @@ import com.jonathanhester.requestFactory.ServerFailure;
  * Main activity - requests "Hello, World" messages from the server and provides
  * a menu item to invoke the accounts activity.
  */
-public class FriendWatcherActivity extends TrackedActivity {
+public class FriendWatcherActivity extends FragmentActivity {
 	/**
 	 * Tag for logging.
 	 */
@@ -54,6 +57,10 @@ public class FriendWatcherActivity extends TrackedActivity {
 	 * The current context.
 	 */
 	private Context mContext = this;
+	
+	private int createUserFailures = 0;
+	
+	private FriendsListFragment friendsFragment;
 
 	/**
 	 * A {@link BroadcastReceiver} to receive the response from a register or
@@ -103,16 +110,16 @@ public class FriendWatcherActivity extends TrackedActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		startActivity(new Intent(this, Welcome.class));
-		
-		setContentView(R.layout.friend_watcher);
-		Button c2dmReg = (Button) findViewById(R.id.c2dm_reg);
-		c2dmReg.setVisibility(View.GONE);
 		Log.i(TAG, "onCreate");
+		
+        // Create the list fragment and add it as our sole content.
+        if (getSupportFragmentManager().findFragmentById(android.R.id.content) == null) {
+        	friendsFragment = new FriendsListFragment();
+            getSupportFragmentManager().beginTransaction().add(android.R.id.content, friendsFragment).commit();
+        }
 
 		registerReceiver(mUpdateUIReceiver, new IntentFilter(
 				Util.UPDATE_UI_INTENT));
-		
 	}
 
 	@Override
@@ -122,7 +129,9 @@ public class FriendWatcherActivity extends TrackedActivity {
 	}
 	
 	private void reloadState() {
-		if (!authedFb()) {
+		if (Util.getSharedPreferences(mContext).getString(Util.SKIP_WELCOME, null) == null) {
+			startActivity(new Intent(this, WelcomeActivity.class));
+		} else if (!authedFb()) {
 			doFbAuth();
 		} else if (Util.getSharedPreferences(mContext).getString(Util.USER_ID, null) == null) {
 			createUser();
@@ -160,10 +169,14 @@ public class FriendWatcherActivity extends TrackedActivity {
 		request.validateUser(fbId(), token()).fire(new Receiver<String>() {
 			@Override
 			public void onFailure(ServerFailure failure) {
+				createUserFailures++;
 				Tracker.getInstance().requestFail(Tracker.TYPE_REQUEST_VALIDATE_USER, 0);
 				stopLoading();
-				saveFbCreds(null, null, null);
-				doFbAuth();
+				Util.saveFbCreds(mContext, null, null, null);
+				if (createUserFailures > 3) 
+					Toast.makeText(mContext, "Error creating user", Toast.LENGTH_SHORT).show();
+				else
+					doFbAuth();
 			}
 
 			@Override
@@ -173,13 +186,10 @@ public class FriendWatcherActivity extends TrackedActivity {
 
 				if (!response.equals("1")) {
 					Toast.makeText(mContext, "Unable to verify user. Let's try again", Toast.LENGTH_SHORT).show();
-					saveFbCreds(null, null, null);
+					Util.saveFbCreds(mContext, null, null, null);
 					doFbAuth();
 				} else {
-					SharedPreferences settings = Util.getSharedPreferences(mContext);
-			        SharedPreferences.Editor editor = settings.edit();
-			        editor.putString(Util.USER_ID, response);
-			        editor.commit();
+					Util.setSharedPreference(mContext, Util.USER_ID, response);
 					Toast.makeText(mContext, "Success!", Toast.LENGTH_SHORT).show();
 					reloadState();
 				}
@@ -190,10 +200,7 @@ public class FriendWatcherActivity extends TrackedActivity {
 	
 	private void doFbAuth() {
 		//first clear registration id so we'll reregister with new fb creds
-		SharedPreferences settings = Util.getSharedPreferences(this);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.remove(Util.DEVICE_REGISTRATION_ID);
-        editor.commit();
+		Util.setSharedPreference(mContext, Util.DEVICE_REGISTRATION_ID, null);
 		Intent authFbIntent = new Intent(this, FbAuthActivity.class);
 		startActivityForResult(authFbIntent, 1);
 	}
@@ -203,8 +210,7 @@ public class FriendWatcherActivity extends TrackedActivity {
 	  super.onActivityResult(requestCode, resultCode, data);
 	  String fbId = data.getStringExtra(Util.FBID);
 	  String token = data.getStringExtra(Util.TOKEN);
-	  saveFbCreds(token, fbId, null);
-	  reloadState();
+	  Util.saveFbCreds(mContext, token, fbId, null);
 	}
 	
 	private boolean authedFb() {
@@ -234,29 +240,20 @@ public class FriendWatcherActivity extends TrackedActivity {
 			@Override
 			public void onFailure(ServerFailure failure) {
 				Tracker.getInstance().requestFail(Tracker.TYPE_REQUEST_VERIFY, 0);
-				saveFbCreds(null, null, null);
+				Util.saveFbCreds(mContext, null, null, null);
 			}
 
 			@Override
 			public void onSuccess(String response) {
 				Tracker.getInstance().requestSuccess(Tracker.TYPE_REQUEST_VERIFY, response.equals("1"));
 				if (!response.equals("1")) {
-					saveFbCreds(null, null, null);
+					Util.saveFbCreds(mContext, null, null, null);
 					doFbAuth();
 				}
 			}
 		});
 	}
 	
-	private void saveFbCreds(String token, String fbId, String userId) {
-		final SharedPreferences prefs = Util.getSharedPreferences(this);
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putString(Util.TOKEN, token);
-		editor.putString(Util.FBID, fbId);
-		editor.putString(Util.USER_ID, userId);
-		editor.commit();
-	}
-
 	private boolean c2dmRegistered() {
 		String deviceRegistrationId = Util.getSharedPreferences(mContext)
 				.getString(Util.DEVICE_REGISTRATION_ID, null);
@@ -293,8 +290,8 @@ public class FriendWatcherActivity extends TrackedActivity {
 	        	reconnectToFb();	        	
 	            return true;
 	        case R.id.refresh_gcm:
-	        	registerC2DM();	        	
-	            return true;	            
+	        	registerC2DM();
+	            return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
@@ -308,15 +305,20 @@ public class FriendWatcherActivity extends TrackedActivity {
 	Facebook facebook = new Facebook(Util.getFacebookId());
 
 	private void showUnfriended() {
-		Tracker.getInstance().loadIframe();
-		String url = Util.getIframeUrl(mContext);
-		WebView iframe = (WebView) findViewById(R.id.iframe);
-		iframe.getSettings().setJavaScriptEnabled(true);
-		iframe.loadUrl(url);
+//		Tracker.getInstance().loadIframe();
+//		String url = Util.getIframeUrl(mContext);
+//		WebView iframe = (WebView) findViewById(R.id.iframe);
+//		iframe.getSettings().setJavaScriptEnabled(true);
+//		iframe.loadUrl(url);
+		
+		ArrayList<FriendStatus> friends = new ArrayList<FriendStatus>();
+		friends.add(new FriendStatus("Bob Johnson", "asdfasf", new Date()));
+		friends.add(new FriendStatus("Chris Score", "asdf", new Date()));
+		friendsFragment.updateFriends(friends);
 	}
 	
 	private void reconnectToFb() {
-		saveFbCreds(null, null, null);
+		Util.saveFbCreds(mContext, null, null, null);
 		reloadState();
 	}
 

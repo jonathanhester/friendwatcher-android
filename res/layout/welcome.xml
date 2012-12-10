@@ -1,14 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="4dp"
+    android:paddingRight="4dp"
     android:orientation="vertical" >
+
+    <TextView
+        style="@style/ListItemHeading"
+        android:layout_marginTop="8dp"
+        android:text="@string/step_fb" />
+
+    <TextView
+        style="@style/ListItemDesc"
+        android:layout_marginTop="4dp"
+        android:text="@string/step_fb_desc" />
+
+    <TextView
+        style="@style/ListItemHeading"
+        android:layout_marginTop="15dp"
+        android:text="@string/step_push" />
+
+    <TextView
+        style="@style/ListItemDesc"
+        android:layout_marginTop="4dp"
+        android:text="@string/step_push_desc" />
 
     <Button
         android:id="@+id/button_next"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Next" />
+        style="@style/Button"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/blue_button"
+        android:text="@string/next_button_text" />
 
 
 </LinearLayout>

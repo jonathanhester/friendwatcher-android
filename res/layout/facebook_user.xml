@@ -1,10 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="fill_parent" android:layout_height="wrap_content"
-	android:orientation="horizontal">
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp" >
 
-	<TextView android:id="@+id/name" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" />
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/name"
+            style="@style/RemovedName"
+            android:layout_alignParentLeft="true" />
+
+        <TextView
+            android:id="@+id/profile_link_text"
+            style="@style/ProfileLink"
+            android:layout_alignParentRight="true" />
+    </RelativeLayout>
+>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <TextView
+            style="@style/ListRemovedText"
+            android:layout_alignParentLeft="true"
+            android:text="@string/removed_text" />
+
+        <TextView
+            android:id="@+id/date"
+            style="@style/RemovedDate"
+            android:layout_alignParentRight="true" />
+    </RelativeLayout>
 
 </LinearLayout>
-

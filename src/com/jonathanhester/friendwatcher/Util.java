@@ -57,11 +57,11 @@ public class Util {
 	 * Tag for logging.
 	 */
 	private static final String TAG = "Util";
-	
+
 	private static final String ENVIRONMENT_PROD = "prod";
 	private static final String ENVIRONMENT_LOCAL = "local1";
-	
-	//private static final String ENVIRONMENT = ENVIRONMENT_PROD;
+
+	// private static final String ENVIRONMENT = ENVIRONMENT_PROD;
 	private static final String ENVIRONMENT = ENVIRONMENT_LOCAL;
 
 	// Shared constants
@@ -72,9 +72,11 @@ public class Util {
 	public static final String FBID = "fbid";
 
 	public static final String TOKEN = "token";
-	
+
 	public static final String USER_ID = "userId";
 
+	public static final String SKIP_WELCOME = "skipWelcome";
+	
 	/**
 	 * Key for device registration id in shared preferences.
 	 */
@@ -128,7 +130,7 @@ public class Util {
 		editor.putInt("notificationID", ++notificatonID % 32);
 		editor.commit();
 	}
-	
+
 	/**
 	 * Returns the (debug or production) URL associated with the registration
 	 * service.
@@ -148,27 +150,48 @@ public class Util {
 		}
 		return url;
 	}
-	
+
 	public static String getEnvironment() {
 		return ENVIRONMENT;
 	}
-	
+
 	public static String getFacebookId() {
 		String local = "115667171863835";
 		String prod = "114363205330822";
 		if (ENVIRONMENT == ENVIRONMENT_PROD) {
 			return prod;
-		} 
+		}
 		return local;
 	}
-	
+
 	/**
 	 * Helper method to get a SharedPreferences instance.
 	 */
 	public static SharedPreferences getSharedPreferences(Context context) {
 		return context.getSharedPreferences(SHARED_PREFS, 0);
 	}
+
+	public static void setSharedPreference(Context context, String key,
+			String value) {
+		SharedPreferences settings = Util.getSharedPreferences(context);
+		SharedPreferences.Editor editor = settings.edit();
+		if (value == null)
+			editor.remove(key);
+		else
+			editor.putString(key, value);
+		editor.commit();
+	}
 	
+	public static void saveFbCreds(Context context, String token, String fbId, String userId) {
+		final SharedPreferences prefs = Util.getSharedPreferences(context);
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString(Util.TOKEN, token);
+		editor.putString(Util.FBID, fbId);
+		editor.putString(Util.USER_ID, userId);
+		editor.commit();
+	}
+
+
 	/**
 	 * Returns true if we are running against a dev mode appengine instance.
 	 */
@@ -177,8 +200,7 @@ public class Util {
 		// of caching the result.
 		return !Setup.PROD_URL.equals(getBaseUrl(context));
 	}
-	
-	
+
 	/**
 	 * Returns a debug url, or null. To set the url, create a file
 	 * {@code assets/debugging_prefs.properties} with a line of the form
@@ -223,13 +245,14 @@ public class Util {
 
 		return url;
 	}
-	
-	public static String getIframeUrl(Context context ) {
+
+	public static String getIframeUrl(Context context) {
 		SharedPreferences sharedPrefs = getSharedPreferences(context);
 		String accessToken = sharedPrefs.getString(Util.TOKEN, null);
 		String fbId = sharedPrefs.getString(Util.FBID, null);
-		
-		String url = getBaseUrl(context) + "/users/" + fbId + "?token=" + accessToken;
+
+		String url = getBaseUrl(context) + "/users/" + fbId + "?token="
+				+ accessToken;
 		return url;
 	}
 

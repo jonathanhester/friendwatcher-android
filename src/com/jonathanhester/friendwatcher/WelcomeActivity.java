@@ -6,7 +6,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
-public class Welcome extends Activity {
+public class WelcomeActivity extends Activity {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +20,7 @@ public class Welcome extends Activity {
 
 			@Override
 			public void onClick(View v) {
+				Util.setSharedPreference(WelcomeActivity.this, Util.SKIP_WELCOME, "1");
 				finish();
 			}
 		});
