@@ -105,7 +105,7 @@ public class Util {
 	 * Display a notification containing the given string.
 	 */
 	public static void generateNotification(Context context, String message) {
-		int icon = R.drawable.status_icon;
+		int icon = R.drawable.blue_heart;
 		long when = System.currentTimeMillis();
 
 		Notification notification = new Notification(icon, message, when);

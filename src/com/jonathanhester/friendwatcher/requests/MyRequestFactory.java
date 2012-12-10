@@ -15,5 +15,6 @@ public class MyRequestFactory {
 		String path = Util.getBaseUrl(context);
 		return new RegistrationInfoRequest(context, path);
 	}
+	
 
 }

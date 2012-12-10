@@ -31,5 +31,12 @@ public class FriendWatcherRequest {
 		params.put("token", accessToken);
 		return new Request<Boolean>(path, "POST", params);
 	}
+	
+	public Request<String> fetchFriends(String fbId, String accessToken) {
+		String path = this.basePath + "/users/" + fbId;
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("token", accessToken);
+		return new Request<String>(path, "GET", params);
+	}
 
 }

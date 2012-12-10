@@ -13,6 +13,7 @@ public class FriendsListFragment extends ListFragment {
 
 	public void updateFriends(ArrayList<FriendStatus> friends) {
 		friendsList.addAll(friends);
+		friendsAdapter.notifyDataSetChanged();
 	}
 
 	@Override

@@ -18,7 +18,6 @@ package com.jonathanhester.friendwatcher;
 import java.util.ArrayList;
 import java.util.Date;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -57,9 +56,9 @@ public class FriendWatcherActivity extends FragmentActivity {
 	 * The current context.
 	 */
 	private Context mContext = this;
-	
+
 	private int createUserFailures = 0;
-	
+
 	private FriendsListFragment friendsFragment;
 
 	/**
@@ -85,7 +84,7 @@ public class FriendWatcherActivity extends FragmentActivity {
 
 			// Display a notification
 			SharedPreferences prefs = Util.getSharedPreferences(mContext);
-			if (status == DeviceRegistrar.REGISTERED_STATUS) 
+			if (status == DeviceRegistrar.REGISTERED_STATUS)
 				showUnfriended();
 		}
 	};
@@ -109,14 +108,15 @@ public class FriendWatcherActivity extends FragmentActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		Log.i(TAG, "onCreate");
-		
-        // Create the list fragment and add it as our sole content.
-        if (getSupportFragmentManager().findFragmentById(android.R.id.content) == null) {
-        	friendsFragment = new FriendsListFragment();
-            getSupportFragmentManager().beginTransaction().add(android.R.id.content, friendsFragment).commit();
-        }
+
+		// Create the list fragment and add it as our sole content.
+		if (getSupportFragmentManager().findFragmentById(android.R.id.content) == null) {
+			friendsFragment = new FriendsListFragment();
+			getSupportFragmentManager().beginTransaction()
+					.add(android.R.id.content, friendsFragment).commit();
+		}
 
 		registerReceiver(mUpdateUIReceiver, new IntentFilter(
 				Util.UPDATE_UI_INTENT));
@@ -127,13 +127,15 @@ public class FriendWatcherActivity extends FragmentActivity {
 		super.onStart();
 		reloadState();
 	}
-	
+
 	private void reloadState() {
-		if (Util.getSharedPreferences(mContext).getString(Util.SKIP_WELCOME, null) == null) {
+		if (Util.getSharedPreferences(mContext).getString(Util.SKIP_WELCOME,
+				null) == null) {
 			startActivity(new Intent(this, WelcomeActivity.class));
 		} else if (!authedFb()) {
 			doFbAuth();
-		} else if (Util.getSharedPreferences(mContext).getString(Util.USER_ID, null) == null) {
+		} else if (Util.getSharedPreferences(mContext).getString(Util.USER_ID,
+				null) == null) {
 			createUser();
 		} else if (!c2dmRegistered()) {
 			// Register a receiver to provide register/unregister notifications
@@ -143,7 +145,7 @@ public class FriendWatcherActivity extends FragmentActivity {
 			showUnfriended();
 		}
 	}
-	
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -162,57 +164,65 @@ public class FriendWatcherActivity extends FragmentActivity {
 		progressDialog.dismiss();
 		Log.d("dialog", "Stopping dialog: " + progressDialog);
 	}
-	
+
 	public void createUser() {
 		startLoading("Validating Facebook user...");
-		final FriendWatcherRequest request = MyRequestFactory.friendWatcherRequest(mContext);
+		final FriendWatcherRequest request = MyRequestFactory
+				.friendWatcherRequest(mContext);
 		request.validateUser(fbId(), token()).fire(new Receiver<String>() {
 			@Override
 			public void onFailure(ServerFailure failure) {
 				createUserFailures++;
-				Tracker.getInstance().requestFail(Tracker.TYPE_REQUEST_VALIDATE_USER, 0);
+				Tracker.getInstance().requestFail(
+						Tracker.TYPE_REQUEST_VALIDATE_USER, 0);
 				stopLoading();
 				Util.saveFbCreds(mContext, null, null, null);
-				if (createUserFailures > 3) 
-					Toast.makeText(mContext, "Error creating user", Toast.LENGTH_SHORT).show();
+				if (createUserFailures > 3)
+					Toast.makeText(mContext, "Error creating user",
+							Toast.LENGTH_SHORT).show();
 				else
 					doFbAuth();
 			}
 
 			@Override
 			public void onSuccess(String response) {
-				Tracker.getInstance().requestSuccess(Tracker.TYPE_REQUEST_VALIDATE_USER, response.equals("1"));
+				Tracker.getInstance().requestSuccess(
+						Tracker.TYPE_REQUEST_VALIDATE_USER,
+						response.equals("1"));
 				stopLoading();
 
 				if (!response.equals("1")) {
-					Toast.makeText(mContext, "Unable to verify user. Let's try again", Toast.LENGTH_SHORT).show();
+					Toast.makeText(mContext,
+							"Unable to verify user. Let's try again",
+							Toast.LENGTH_SHORT).show();
 					Util.saveFbCreds(mContext, null, null, null);
 					doFbAuth();
 				} else {
 					Util.setSharedPreference(mContext, Util.USER_ID, response);
-					Toast.makeText(mContext, "Success!", Toast.LENGTH_SHORT).show();
+					Toast.makeText(mContext, "Success!", Toast.LENGTH_SHORT)
+							.show();
 					reloadState();
 				}
 			}
 		});
 
 	}
-	
+
 	private void doFbAuth() {
-		//first clear registration id so we'll reregister with new fb creds
+		// first clear registration id so we'll reregister with new fb creds
 		Util.setSharedPreference(mContext, Util.DEVICE_REGISTRATION_ID, null);
 		Intent authFbIntent = new Intent(this, FbAuthActivity.class);
 		startActivityForResult(authFbIntent, 1);
 	}
-	
-	@Override 
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {     
-	  super.onActivityResult(requestCode, resultCode, data);
-	  String fbId = data.getStringExtra(Util.FBID);
-	  String token = data.getStringExtra(Util.TOKEN);
-	  Util.saveFbCreds(mContext, token, fbId, null);
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		String fbId = data.getStringExtra(Util.FBID);
+		String token = data.getStringExtra(Util.TOKEN);
+		Util.saveFbCreds(mContext, token, fbId, null);
 	}
-	
+
 	private boolean authedFb() {
 		String token = token();
 		Tracker.getInstance().authed(token);
@@ -220,32 +230,35 @@ public class FriendWatcherActivity extends FragmentActivity {
 			return false;
 		return true;
 	}
-	
+
 	private String token() {
 		return Util.getSharedPreferences(mContext).getString(Util.TOKEN, null);
 	}
-	
+
 	private String fbId() {
 		return Util.getSharedPreferences(mContext).getString(Util.FBID, null);
 	}
-	
+
 	private void verifyServerToken() {
 		String accessToken = Util.getSharedPreferences(mContext).getString(
 				Util.TOKEN, null);
-		String fbId = Util.getSharedPreferences(mContext).getString(
-				Util.FBID, null);
-		final FriendWatcherRequest request = MyRequestFactory.friendWatcherRequest(mContext);
+		String fbId = Util.getSharedPreferences(mContext).getString(Util.FBID,
+				null);
+		final FriendWatcherRequest request = MyRequestFactory
+				.friendWatcherRequest(mContext);
 		Tracker.getInstance().requestStart(Tracker.TYPE_REQUEST_VERIFY);
 		request.verifyToken(fbId, accessToken).fire(new Receiver<String>() {
 			@Override
 			public void onFailure(ServerFailure failure) {
-				Tracker.getInstance().requestFail(Tracker.TYPE_REQUEST_VERIFY, 0);
+				Tracker.getInstance().requestFail(Tracker.TYPE_REQUEST_VERIFY,
+						0);
 				Util.saveFbCreds(mContext, null, null, null);
 			}
 
 			@Override
 			public void onSuccess(String response) {
-				Tracker.getInstance().requestSuccess(Tracker.TYPE_REQUEST_VERIFY, response.equals("1"));
+				Tracker.getInstance().requestSuccess(
+						Tracker.TYPE_REQUEST_VERIFY, response.equals("1"));
 				if (!response.equals("1")) {
 					Util.saveFbCreds(mContext, null, null, null);
 					doFbAuth();
@@ -253,11 +266,12 @@ public class FriendWatcherActivity extends FragmentActivity {
 			}
 		});
 	}
-	
+
 	private boolean c2dmRegistered() {
 		String deviceRegistrationId = Util.getSharedPreferences(mContext)
 				.getString(Util.DEVICE_REGISTRATION_ID, null);
-		Tracker.getInstance().requestSuccess(Tracker.TYPE_C2DM, (deviceRegistrationId != null));
+		Tracker.getInstance().requestSuccess(Tracker.TYPE_C2DM,
+				(deviceRegistrationId != null));
 		if (deviceRegistrationId == null)
 			return false;
 		return true;
@@ -278,23 +292,23 @@ public class FriendWatcherActivity extends FragmentActivity {
 		inflater.inflate(R.menu.main_menu, menu);
 		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-	    // Handle item selection
-	    switch (item.getItemId()) {
-	        case R.id.refresh:
-	        	showUnfriended();	        	
-	            return true;
-	        case R.id.reconnect:
-	        	reconnectToFb();	        	
-	            return true;
-	        case R.id.refresh_gcm:
-	        	registerC2DM();
-	            return true;
-	        default:
-	            return super.onOptionsItemSelected(item);
-	    }
+		// Handle item selection
+		switch (item.getItemId()) {
+		case R.id.refresh:
+			showUnfriended();
+			return true;
+		case R.id.reconnect:
+			reconnectToFb();
+			return true;
+		case R.id.refresh_gcm:
+			registerC2DM();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
 
 	private void registerC2DM() {
@@ -305,18 +319,34 @@ public class FriendWatcherActivity extends FragmentActivity {
 	Facebook facebook = new Facebook(Util.getFacebookId());
 
 	private void showUnfriended() {
-//		Tracker.getInstance().loadIframe();
-//		String url = Util.getIframeUrl(mContext);
-//		WebView iframe = (WebView) findViewById(R.id.iframe);
-//		iframe.getSettings().setJavaScriptEnabled(true);
-//		iframe.loadUrl(url);
-		
-		ArrayList<FriendStatus> friends = new ArrayList<FriendStatus>();
-		friends.add(new FriendStatus("Bob Johnson", "asdfasf", new Date()));
-		friends.add(new FriendStatus("Chris Score", "asdf", new Date()));
-		friendsFragment.updateFriends(friends);
+		// Tracker.getInstance().loadIframe();
+		// String url = Util.getIframeUrl(mContext);
+		// WebView iframe = (WebView) findViewById(R.id.iframe);
+		// iframe.getSettings().setJavaScriptEnabled(true);
+		// iframe.loadUrl(url);
+
+		final FriendWatcherRequest request = MyRequestFactory
+				.friendWatcherRequest(mContext);
+		startLoading("Fetching list...");
+		request.fetchFriends(fbId(), token()).fire(new Receiver<String>() {
+			@Override
+			public void onFailure(ServerFailure failure) {
+				Tracker.getInstance().requestFail(Tracker.TYPE_REQUEST_VERIFY,
+						0);
+				stopLoading();
+			}
+
+			@Override
+			public void onSuccess(String response) {
+				stopLoading();
+				ArrayList<FriendStatus> friends = FriendStatus
+						.fromJson(response);
+				friendsFragment.updateFriends(friends);
+			}
+		});
+
 	}
-	
+
 	private void reconnectToFb() {
 		Util.saveFbCreds(mContext, null, null, null);
 		reloadState();
