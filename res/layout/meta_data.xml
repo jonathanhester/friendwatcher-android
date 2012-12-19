@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingLeft="4dp"
+    android:paddingRight="4dp"
+    android:paddingBottom="10dp" >
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <TextView
+            style="@style/MetaDataTitle"
+            android:layout_alignParentLeft="true"
+            android:text="@string/meta_total_tracking" />
+
+        <TextView
+            android:id="@+id/meta_total_tracking"
+            style="@style/MetaDataData"
+            android:layout_alignParentRight="true" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <TextView
+            style="@style/MetaDataTitle"
+            android:layout_alignParentLeft="true"
+            android:text="@string/meta_started_tracking" />
+
+        <TextView
+            android:id="@+id/meta_started_tracking"
+            style="@style/MetaDataData"
+            android:layout_alignParentRight="true" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <TextView
+            style="@style/MetaDataTitle"
+            android:layout_alignParentLeft="true"
+            android:text="@string/meta_last_update" />
+
+        <TextView
+            android:id="@+id/meta_last_update"
+            style="@style/MetaDataData"
+            android:layout_alignParentRight="true" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <TextView
+            style="@style/MetaDataTitle"
+            android:layout_alignParentLeft="true"
+            android:text="@string/meta_num_removed" />
+
+        <TextView
+            android:id="@+id/meta_num_removed"
+            style="@style/MetaDataData"
+            android:layout_alignParentRight="true" />
+    </RelativeLayout>
+
+</LinearLayout>

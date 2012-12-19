@@ -17,6 +17,10 @@
 
     <string name="do_fb_auth_button_text">Retry Facebook auth</string>
     
+    <string name="meta_total_tracking">Friends being tracked</string>
+    <string name="meta_last_update">Last update</string>
+    <string name="meta_started_tracking">Started Tracking</string>
+    <string name="meta_num_removed">Removed Friends</string>
 
     <!-- Dialog message text [CHAR LIMIT=NONE] -->
     <string name="needs_account">To receive notifications from this app, you must first create an account.</string>

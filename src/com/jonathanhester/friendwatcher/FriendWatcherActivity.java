@@ -15,9 +15,6 @@
  */
 package com.jonathanhester.friendwatcher;
 
-import java.util.ArrayList;
-import java.util.Date;
-
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -30,9 +27,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.facebook.android.Facebook;
@@ -91,15 +85,6 @@ public class FriendWatcherActivity extends FragmentActivity {
 
 	private void c2dmError() {
 		Tracker.getInstance().requestFail(Tracker.TYPE_C2DM);
-		Button c2dmReg = (Button) findViewById(R.id.c2dm_reg);
-		c2dmReg.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				registerC2DM();
-			}
-		});
-		c2dmReg.setVisibility(View.VISIBLE);
 	}
 
 	/**
@@ -120,6 +105,7 @@ public class FriendWatcherActivity extends FragmentActivity {
 
 		registerReceiver(mUpdateUIReceiver, new IntentFilter(
 				Util.UPDATE_UI_INTENT));
+		Util.setSharedPreference(mContext, Util.LIST_VALID, null);
 	}
 
 	@Override
@@ -298,6 +284,7 @@ public class FriendWatcherActivity extends FragmentActivity {
 		// Handle item selection
 		switch (item.getItemId()) {
 		case R.id.refresh:
+			Util.setSharedPreference(mContext, Util.LIST_VALID, null);
 			showUnfriended();
 			return true;
 		case R.id.reconnect:
@@ -319,12 +306,10 @@ public class FriendWatcherActivity extends FragmentActivity {
 	Facebook facebook = new Facebook(Util.getFacebookId());
 
 	private void showUnfriended() {
-		// Tracker.getInstance().loadIframe();
-		// String url = Util.getIframeUrl(mContext);
-		// WebView iframe = (WebView) findViewById(R.id.iframe);
-		// iframe.getSettings().setJavaScriptEnabled(true);
-		// iframe.loadUrl(url);
-
+		String listValid = Util.getSharedPreferences(mContext).getString(
+				Util.LIST_VALID, null);
+		if (listValid != null)
+			return;
 		final FriendWatcherRequest request = MyRequestFactory
 				.friendWatcherRequest(mContext);
 		startLoading("Fetching list...");
@@ -339,9 +324,9 @@ public class FriendWatcherActivity extends FragmentActivity {
 			@Override
 			public void onSuccess(String response) {
 				stopLoading();
-				ArrayList<FriendStatus> friends = FriendStatus
-						.fromJson(response);
-				friendsFragment.updateFriends(friends);
+				Util.setSharedPreference(mContext, Util.LIST_VALID, "1");
+				FriendData data = FriendData.fromJson(response);
+				friendsFragment.updateFriendData(data);
 			}
 		});
 

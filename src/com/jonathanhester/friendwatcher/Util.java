@@ -20,19 +20,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
-
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONObject;
+import java.util.TimeZone;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -41,11 +34,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
+import android.text.format.DateFormat;
 import android.util.Log;
-
-import com.google.web.bindery.event.shared.SimpleEventBus;
-import com.google.web.bindery.requestfactory.shared.RequestFactory;
-import com.google.web.bindery.requestfactory.vm.RequestFactorySource;
 
 /**
  * Utility methods for getting the base URL for client-server communication and
@@ -76,6 +66,8 @@ public class Util {
 	public static final String USER_ID = "userId";
 
 	public static final String SKIP_WELCOME = "skipWelcome";
+	
+	public static final String LIST_VALID = "listValid";
 	
 	/**
 	 * Key for device registration id in shared preferences.
@@ -129,6 +121,18 @@ public class Util {
 		SharedPreferences.Editor editor = settings.edit();
 		editor.putInt("notificationID", ++notificatonID % 32);
 		editor.commit();
+		Util.setSharedPreference(context, Util.LIST_VALID, null);
+	}
+	
+	public static String parseDate(String stringDate) {
+		SimpleDateFormat  format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		format.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+		try {
+			Date date = format.parse(stringDate);
+			return (String)DateFormat.format("MM/dd/yyyy hh:mm", date);
+		} catch (Exception e) {
+			return "";
+		}
 	}
 
 	/**
