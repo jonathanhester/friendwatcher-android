@@ -113,6 +113,17 @@ public class FriendWatcherActivity extends FragmentActivity {
 		super.onStart();
 		reloadState();
 	}
+	
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            String type = (String) extras.get("type");
+            if (type != null)
+            	showUnfriended();
+        }
+	}
 
 	private void reloadState() {
 		if (Util.getSharedPreferences(mContext).getString(Util.SKIP_WELCOME,
@@ -185,7 +196,7 @@ public class FriendWatcherActivity extends FragmentActivity {
 					doFbAuth();
 				} else {
 					Util.setSharedPreference(mContext, Util.USER_ID, response);
-					Toast.makeText(mContext, "Success!", Toast.LENGTH_SHORT)
+					Toast.makeText(mContext, "Facebook user validated!", Toast.LENGTH_SHORT)
 							.show();
 					reloadState();
 				}
@@ -290,8 +301,11 @@ public class FriendWatcherActivity extends FragmentActivity {
 		case R.id.reconnect:
 			reconnectToFb();
 			return true;
-		case R.id.refresh_gcm:
-			registerC2DM();
+		case R.id.force_refresh:
+			forceRefresh();
+			return true;
+		case R.id.test_push:
+			testPush();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -300,7 +314,7 @@ public class FriendWatcherActivity extends FragmentActivity {
 
 	private void registerC2DM() {
 		Tracker.getInstance().requestStart(Tracker.TYPE_C2DM);
-		C2DMessaging.register(mContext, Setup.SENDER_ID);
+		C2DMessaging.register(mContext, Util.GCM_SENDER_ID);
 	}
 
 	Facebook facebook = new Facebook(Util.getFacebookId());
@@ -318,6 +332,9 @@ public class FriendWatcherActivity extends FragmentActivity {
 			public void onFailure(ServerFailure failure) {
 				Tracker.getInstance().requestFail(Tracker.TYPE_REQUEST_VERIFY,
 						0);
+				Toast.makeText(mContext, "Failed to load list from server",
+						Toast.LENGTH_SHORT).show();
+
 				stopLoading();
 			}
 
@@ -329,7 +346,6 @@ public class FriendWatcherActivity extends FragmentActivity {
 				friendsFragment.updateFriendData(data);
 			}
 		});
-
 	}
 
 	private void reconnectToFb() {
@@ -337,4 +353,46 @@ public class FriendWatcherActivity extends FragmentActivity {
 		reloadState();
 	}
 
+	private void forceRefresh() {
+		final FriendWatcherRequest request = MyRequestFactory
+				.friendWatcherRequest(mContext);
+		startLoading("Initiating request to Facebook...");
+		request.forceRefresh(fbId(), token()).fire(new Receiver<String>() {
+			@Override
+			public void onFailure(ServerFailure failure) {
+				Tracker.getInstance().requestFail(
+						Tracker.TYPE_REQUEST_FORCE_REFRESH, 0);
+				stopLoading();
+			}
+
+			@Override
+			public void onSuccess(String response) {
+				stopLoading();
+				Toast.makeText(mContext,
+						"Success! Expect a notification soon...",
+						Toast.LENGTH_SHORT).show();
+			}
+		});
+	}
+
+	private void testPush() {
+		final FriendWatcherRequest request = MyRequestFactory
+				.friendWatcherRequest(mContext);
+		startLoading("Requesting test push notification...");
+		request.testPush(fbId(), token()).fire(new Receiver<String>() {
+			@Override
+			public void onFailure(ServerFailure failure) {
+				Tracker.getInstance().requestFail(
+						Tracker.TYPE_REQUEST_TEST_PUSH, 0);
+				stopLoading();
+			}
+
+			@Override
+			public void onSuccess(String response) {
+				stopLoading();
+				Toast.makeText(mContext, "Expect notification soon!",
+						Toast.LENGTH_SHORT).show();
+			}
+		});
+	}
 }

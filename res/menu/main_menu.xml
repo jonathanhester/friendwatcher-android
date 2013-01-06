@@ -4,19 +4,19 @@
     <item
         android:id="@+id/refresh"
         android:icon="@drawable/ic_menu_refresh"
-        android:title="Refresh"/>
+        android:title="Refresh List"/>
     <item
         android:id="@+id/reconnect"
-        android:icon="@drawable/ic_menu_refresh"
-        android:title="Retry Facebook"/>
+        android:icon="@drawable/ic_menu_forward"
+        android:title="Verify FB Connect"/>
     <item
-        android:id="@+id/refresh_gcm"
-        android:icon="@drawable/ic_menu_refresh"
-        android:title="Refresh GCM"/>
+        android:id="@+id/force_refresh"
+        android:icon="@drawable/ic_menu_allfriends"
+        android:title="Force Friends Reload"/>
     
     <item
         android:id="@+id/test_push"
-        android:icon="@drawable/ic_menu_refresh"
+        android:icon="@drawable/ic_push_icon"
         android:title="Test Push Notification"/>
 
 </menu>

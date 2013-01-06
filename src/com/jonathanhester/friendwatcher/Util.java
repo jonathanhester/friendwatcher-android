@@ -43,6 +43,12 @@ import android.util.Log;
  */
 public class Util {
 
+	public static final String GCM_SENDER_ID = "440751613652";
+	/**
+	 * The URL of the production service.
+	 */
+	public static final String PROD_URL = "http://friendwatcher.jonathanhester.com";
+
 	/**
 	 * Tag for logging.
 	 */
@@ -51,8 +57,8 @@ public class Util {
 	private static final String ENVIRONMENT_PROD = "prod";
 	private static final String ENVIRONMENT_LOCAL = "local1";
 
-	// private static final String ENVIRONMENT = ENVIRONMENT_PROD;
-	private static final String ENVIRONMENT = ENVIRONMENT_LOCAL;
+	private static final String ENVIRONMENT = ENVIRONMENT_PROD;
+	//private static final String ENVIRONMENT = ENVIRONMENT_LOCAL;
 
 	// Shared constants
 
@@ -66,9 +72,9 @@ public class Util {
 	public static final String USER_ID = "userId";
 
 	public static final String SKIP_WELCOME = "skipWelcome";
-	
+
 	public static final String LIST_VALID = "listValid";
-	
+
 	/**
 	 * Key for device registration id in shared preferences.
 	 */
@@ -96,7 +102,8 @@ public class Util {
 	/**
 	 * Display a notification containing the given string.
 	 */
-	public static void generateNotification(Context context, String message) {
+	public static void generateNotification(Context context, String message,
+			String type) {
 		int icon = R.drawable.blue_heart;
 		long when = System.currentTimeMillis();
 
@@ -104,6 +111,8 @@ public class Util {
 
 		Intent notificationIntent = new Intent(context,
 				FriendWatcherActivity.class);
+		notificationIntent.putExtra("type", type);
+		
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
 				notificationIntent, 0);
 
@@ -123,13 +132,14 @@ public class Util {
 		editor.commit();
 		Util.setSharedPreference(context, Util.LIST_VALID, null);
 	}
-	
+
 	public static String parseDate(String stringDate) {
-		SimpleDateFormat  format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		SimpleDateFormat format = new SimpleDateFormat(
+				"yyyy-MM-dd'T'HH:mm:ss'Z'");
 		format.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
 		try {
 			Date date = format.parse(stringDate);
-			return (String)DateFormat.format("MM/dd/yyyy hh:mm", date);
+			return (String) DateFormat.format("MM/dd/yyyy hh:mmaaa", date);
 		} catch (Exception e) {
 			return "";
 		}
@@ -148,7 +158,7 @@ public class Util {
 			}
 			// otherwise, use the production url
 			if (url == null) {
-				url = Setup.PROD_URL;
+				url = Util.PROD_URL;
 			}
 			URL_MAP.put(context, url);
 		}
@@ -185,8 +195,9 @@ public class Util {
 			editor.putString(key, value);
 		editor.commit();
 	}
-	
-	public static void saveFbCreds(Context context, String token, String fbId, String userId) {
+
+	public static void saveFbCreds(Context context, String token, String fbId,
+			String userId) {
 		final SharedPreferences prefs = Util.getSharedPreferences(context);
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putString(Util.TOKEN, token);
@@ -195,14 +206,13 @@ public class Util {
 		editor.commit();
 	}
 
-
 	/**
 	 * Returns true if we are running against a dev mode appengine instance.
 	 */
 	public static boolean isDebug(Context context) {
 		// Although this is a bit roundabout, it has the nice side effect
 		// of caching the result.
-		return !Setup.PROD_URL.equals(getBaseUrl(context));
+		return !Util.PROD_URL.equals(getBaseUrl(context));
 	}
 
 	/**

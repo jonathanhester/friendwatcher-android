@@ -34,7 +34,7 @@ import com.jonathanhester.c2dm.C2DMBaseReceiver;
 public class C2DMReceiver extends C2DMBaseReceiver {
 
     public C2DMReceiver() {
-        super(Setup.SENDER_ID);
+        super(Util.GCM_SENDER_ID);
     }
 
     /**

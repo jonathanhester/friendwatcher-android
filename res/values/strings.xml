@@ -4,7 +4,7 @@
     <string name="welcome">Welcome to FriendWatcher</string>
     
     <string name="step_fb">Connect to Facebook</string>
-    <string name="step_fb_desc">FriendWatcher needs the \"Basic Info\" permission from Facebook to monitor your friends list.</string>
+    <string name="step_fb_desc">FriendWatcher needs the \"Basic Info\" permission from Facebook to monitor your friends list. It will never post to your profile!</string>
     
     <string name="step_push">Enable Push Notifications</string>
     <string name="step_push_desc">This will allow FriendWatcher to notify you instantly if you\'ve been defriended.</string>

@@ -9,6 +9,8 @@ public class Tracker {
 	
 	public static String TYPE_REQUEST_VERIFY = "verifyToken";
 	public static String TYPE_REQUEST_VALIDATE_USER = "validateUser";
+	public static String TYPE_REQUEST_FORCE_REFRESH = "forceRefresh";
+	public static String TYPE_REQUEST_TEST_PUSH = "testPush";
 	public static String TYPE_FACEBOOK_AUTH = "fbAuth";
 	public static String TYPE_C2DM = "c2dm";
 	public static String TYPE_TIME_LOADING = "loadingBar";

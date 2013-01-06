@@ -42,7 +42,7 @@ public class MessageDisplay {
             String sender = (String) extras.get("sender");
             String message = (String) extras.get("message");
             String type = (String) extras.get("type");
-            Util.generateNotification(context, message);
+            Util.generateNotification(context, message, type);
             //playNotificationSound(context);
         }
     }
