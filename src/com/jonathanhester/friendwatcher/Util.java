@@ -62,6 +62,7 @@ public class Util {
 
 	// Shared constants
 
+	public static final int REFRESH_FRIENDS = 10;
 	/**
 	 * Key for account name in shared preferences.
 	 */
@@ -141,7 +142,7 @@ public class Util {
 			Date date = format.parse(stringDate);
 			return (String) DateFormat.format("MM/dd/yyyy hh:mmaaa", date);
 		} catch (Exception e) {
-			return "";
+			return stringDate;
 		}
 	}
 
@@ -275,5 +276,12 @@ public class Util {
 	 */
 	private static String getPackageName() {
 		return Util.class.getPackage().getName();
+	}
+	
+	public static void updateUi(final Context context) {
+		final Intent updateUIIntent = new Intent(Util.UPDATE_UI_INTENT);
+		updateUIIntent.putExtra(DeviceRegistrar.STATUS_EXTRA,
+				Util.UPDATE_UI_INTENT);
+		context.sendBroadcast(updateUIIntent);
 	}
 }

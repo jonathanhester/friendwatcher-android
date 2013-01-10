@@ -13,7 +13,16 @@ public class FriendData {
 	private String lastSynced;
 	private String created;
 	private String numRemoved;
+	private String name;
 	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public ArrayList<FriendStatus> getFriendStatusList() {
 		return friendStatusList;
 	}
@@ -62,14 +71,18 @@ public class FriendData {
 		try {
 			JSONObject json = new JSONObject(response);
 			JSONObject meta = json.getJSONObject("meta");
+			String userName = meta.getString("name");
+			friendData.setName(userName);
+			
 			String created = Util.parseDate(meta.getString("created"));
 			String lastSynced = Util.parseDate(meta.getString("synced"));
 			String total = meta.getString("total");
 			String numRemoved = meta.getString("removed");
+			
 			friendData.setCreated(created);
 			friendData.setLastSynced(lastSynced);
-			friendData.setNumRemoved(numRemoved);
 			friendData.setTotal(total);
+			friendData.setNumRemoved(numRemoved);
 			
 			JSONObject data = json.getJSONObject("data");
 			JSONArray removed = data.getJSONArray("removed");

@@ -71,6 +71,8 @@ public class FriendWatcherActivity extends FragmentActivity {
 			} else if (status == DeviceRegistrar.UNREGISTERED_STATUS) {
 				message = getResources().getString(
 						R.string.unregistration_succeeded);
+			} else if (status == Util.REFRESH_FRIENDS) {
+				showUnfriended();
 			} else {
 				c2dmError();
 				message = getResources().getString(R.string.registration_error);
@@ -113,16 +115,16 @@ public class FriendWatcherActivity extends FragmentActivity {
 		super.onStart();
 		reloadState();
 	}
-	
+
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
-        Bundle extras = intent.getExtras();
-        if (extras != null) {
-            String type = (String) extras.get("type");
-            if (type != null)
-            	showUnfriended();
-        }
+		Bundle extras = intent.getExtras();
+		if (extras != null) {
+			String type = (String) extras.get("type");
+			if (type != null)
+				showUnfriended();
+		}
 	}
 
 	private void reloadState() {
@@ -196,8 +198,8 @@ public class FriendWatcherActivity extends FragmentActivity {
 					doFbAuth();
 				} else {
 					Util.setSharedPreference(mContext, Util.USER_ID, response);
-					Toast.makeText(mContext, "Facebook user validated!", Toast.LENGTH_SHORT)
-							.show();
+					Toast.makeText(mContext, "Facebook user validated!",
+							Toast.LENGTH_SHORT).show();
 					reloadState();
 				}
 			}
@@ -344,6 +346,9 @@ public class FriendWatcherActivity extends FragmentActivity {
 				Util.setSharedPreference(mContext, Util.LIST_VALID, "1");
 				FriendData data = FriendData.fromJson(response);
 				friendsFragment.updateFriendData(data);
+				Toast.makeText(mContext, "Data updated...",
+						Toast.LENGTH_SHORT).show();
+
 			}
 		});
 	}

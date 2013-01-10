@@ -17,14 +17,25 @@ public class FriendsListFragment extends ListFragment {
 	View metaView;
 
 	public void updateFriendData(FriendData data) {
-		((TextView) metaView.findViewById(R.id.meta_last_update)).setText(data
-				.getLastSynced());
-		((TextView) metaView.findViewById(R.id.meta_num_removed)).setText(data
-				.getNumRemoved());
+		((TextView) metaView.findViewById(R.id.meta_name)).setText(data
+				.getName());
 		((TextView) metaView.findViewById(R.id.meta_started_tracking))
 				.setText(data.getCreated());
-		((TextView) metaView.findViewById(R.id.meta_total_tracking))
-				.setText(data.getTotal());
+
+		if (!data.getLastSynced().equals("null")) {
+			metaView.findViewById(R.id.meta_extra).setVisibility(View.VISIBLE);
+			((TextView) metaView.findViewById(R.id.meta_last_update))
+					.setText(data.getLastSynced());
+			((TextView) metaView.findViewById(R.id.meta_num_removed))
+					.setText(data.getNumRemoved());
+			((TextView) metaView.findViewById(R.id.meta_total_tracking))
+					.setText(data.getTotal());
+		}
+
+		if (data.getFriendStatusList().size() > 0) {
+			metaView.findViewById(R.id.activity_filler)
+					.setVisibility(View.GONE);
+		}
 
 		ArrayList<FriendStatus> friends = data.getFriendStatusList();
 		friendsList.clear();

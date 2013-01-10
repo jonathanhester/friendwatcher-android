@@ -22,6 +22,7 @@ import java.io.IOException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 
 import com.jonathanhester.c2dm.C2DMBaseReceiver;
 
@@ -78,9 +79,14 @@ public class C2DMReceiver extends C2DMBaseReceiver {
      */
     @Override
     public void onMessage(Context context, Intent intent) {
-        /*
-         * Replace this with your application-specific code
-         */
-        MessageDisplay.displayMessage(context, intent);
+        Bundle extras = intent.getExtras();
+        String type = null;
+        if (extras != null) {
+            type = (String) extras.get("type");
+        }
+        if (type.equals("refresh"))
+        	Util.updateUi(context);
+        else
+        	MessageDisplay.displayMessage(context, intent);
     }
 }

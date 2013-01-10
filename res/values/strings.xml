@@ -12,6 +12,8 @@
     <string name="next_button_text">Next</string>
     <string name="removed_text">removed on</string>
     
+    <string name="activity_filler">No friend list changes yet but we\'re monitoring!</string>
+    
     <!--  Name of the application in the launcher [CHAR LIMIT=NONE] -->
     <string name="app_name">Friend Watcher</string>
 

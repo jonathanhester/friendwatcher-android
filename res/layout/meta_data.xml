@@ -3,72 +3,81 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:paddingBottom="10dp"
     android:paddingLeft="4dp"
-    android:paddingRight="4dp"
-    android:paddingBottom="10dp" >
+    android:paddingRight="4dp" >
 
-    <RelativeLayout
+    <TextView
+        android:id="@+id/meta_name"
+        style="@style/MetaDataName" />
+
+    <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="vertical" >
 
         <TextView
             style="@style/MetaDataTitle"
-            android:layout_alignParentLeft="true"
-            android:text="@string/meta_total_tracking" />
-
-        <TextView
-            android:id="@+id/meta_total_tracking"
-            style="@style/MetaDataData"
-            android:layout_alignParentRight="true" />
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
-
-        <TextView
-            style="@style/MetaDataTitle"
-            android:layout_alignParentLeft="true"
             android:text="@string/meta_started_tracking" />
 
         <TextView
             android:id="@+id/meta_started_tracking"
-            style="@style/MetaDataData"
-            android:layout_alignParentRight="true" />
-    </RelativeLayout>
+            style="@style/MetaDataData" />
+    </LinearLayout>
 
-    <RelativeLayout
+    <LinearLayout
+        android:id="@+id/meta_extra"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+        android:orientation="vertical"
+        android:visibility="gone" >
 
-        <TextView
-            style="@style/MetaDataTitle"
-            android:layout_alignParentLeft="true"
-            android:text="@string/meta_last_update" />
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
 
-        <TextView
-            android:id="@+id/meta_last_update"
-            style="@style/MetaDataData"
-            android:layout_alignParentRight="true" />
-    </RelativeLayout>
+            <TextView
+                style="@style/MetaDataTitle"
+                android:text="@string/meta_total_tracking" />
 
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
+            <TextView
+                android:id="@+id/meta_total_tracking"
+                style="@style/MetaDataData" />
+        </LinearLayout>
 
-        <TextView
-            style="@style/MetaDataTitle"
-            android:layout_alignParentLeft="true"
-            android:text="@string/meta_num_removed" />
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
 
-        <TextView
-            android:id="@+id/meta_num_removed"
-            style="@style/MetaDataData"
-            android:layout_alignParentRight="true" />
-    </RelativeLayout>
+            <TextView
+                style="@style/MetaDataTitle"
+                android:text="@string/meta_last_update" />
+
+            <TextView
+                android:id="@+id/meta_last_update"
+                style="@style/MetaDataData" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                style="@style/MetaDataTitle"
+                android:text="@string/meta_num_removed" />
+
+            <TextView
+                android:id="@+id/meta_num_removed"
+                style="@style/MetaDataData" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/activity_filler"
+        style="@style/ActivityFiller"
+        android:text="@string/activity_filler" />
 
 </LinearLayout>
