@@ -21,7 +21,6 @@
             style="@style/ProfileLink"
             android:layout_alignParentRight="true" />
     </RelativeLayout>
->
 
     <RelativeLayout
         android:layout_width="fill_parent"
@@ -29,9 +28,9 @@
         android:orientation="horizontal" >
 
         <TextView
-            style="@style/ListRemovedText"
+            style="@style/ListActionText"
             android:layout_alignParentLeft="true"
-            android:text="@string/removed_text" />
+            android:id="@+id/event_type" />
 
         <TextView
             android:id="@+id/date"

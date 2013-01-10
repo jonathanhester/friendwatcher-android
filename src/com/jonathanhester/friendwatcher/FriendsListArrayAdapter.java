@@ -41,6 +41,12 @@ public class FriendsListArrayAdapter extends ArrayAdapter<FriendStatus> {
 			linkView.setMovementMethod(LinkMovementMethod.getInstance());
 			linkView.setText(Html.fromHtml(item.getProfileUrlText()));
 			
+			TextView eventType = (TextView) view.findViewById(R.id.event_type);
+			if (item.getType() == FriendStatus.REMOVED)
+				eventType.setText(context.getResources().getString(R.string.removed_text));
+			else
+				eventType.setText(context.getResources().getString(R.string.added_text));
+			
 			TextView date = (TextView) view.findViewById(R.id.date);
 			date.setText(item.getDateText());
 		}

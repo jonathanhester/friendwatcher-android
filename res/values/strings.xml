@@ -11,6 +11,7 @@
 
     <string name="next_button_text">Next</string>
     <string name="removed_text">removed on</string>
+    <string name="added_text">added on</string>
     
     <string name="activity_filler">No friend list changes yet but we\'re monitoring!</string>
     

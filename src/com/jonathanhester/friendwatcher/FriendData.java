@@ -85,15 +85,21 @@ public class FriendData {
 			friendData.setNumRemoved(numRemoved);
 			
 			JSONObject data = json.getJSONObject("data");
-			JSONArray removed = data.getJSONArray("removed");
-			for (int i = 0; i < removed.length(); i++) {
-				JSONObject friendDataJson = ((JSONObject) removed.get(i));
+			JSONArray events = data.getJSONArray("events");
+			for (int i = 0; i < events.length(); i++) {
+				JSONObject friendDataJson = ((JSONObject) events.get(i));
 				String name = friendDataJson.getString("name");
 				String link = friendDataJson.getString("link");
 				String time = friendDataJson.getString("time");
+				int eventType;
+				if (friendDataJson.getString("event_type").equals("removed")) {
+					eventType = FriendStatus.REMOVED;
+				} else {
+					eventType = FriendStatus.ADDED;
+				}
 			
 				String date = Util.parseDate(time);
-				list.add(new FriendStatus(name, link, date));
+				list.add(new FriendStatus(name, link, date, eventType));
 			}
 
 		} catch (Exception e) {

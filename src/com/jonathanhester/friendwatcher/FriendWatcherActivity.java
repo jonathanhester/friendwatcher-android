@@ -154,8 +154,10 @@ public class FriendWatcherActivity extends FragmentActivity {
 
 	public void startLoading(String message) {
 		Tracker.getInstance().startTimeEvent(Tracker.TYPE_TIME_LOADING);
-		progressDialog = ProgressDialog.show(this, "", message);
-		Log.d("dialog", "Showing dialog: " + progressDialog);
+		if (progressDialog == null || !progressDialog.isShowing()) {
+			progressDialog = ProgressDialog.show(this, "", message);
+			Log.d("dialog", "Showing dialog: " + progressDialog);
+		}
 	}
 
 	public void stopLoading() {
