@@ -46,9 +46,9 @@ public class DeviceRegistrar {
 			final String deviceRegistrationId, final boolean register) {
 		final Intent updateUIIntent = new Intent(Util.UPDATE_UI_INTENT);
 
-		SharedPreferences prefs = Util.getSharedPreferences(context);
-		String fbId = prefs.getString(Util.FBID, null);
-		String token = prefs.getString(Util.TOKEN, null);
+		SharedPreferences prefs = DataStore.getSharedPreferences(context);
+		String fbId = prefs.getString(DataStore.FBID, null);
+		String token = prefs.getString(DataStore.TOKEN, null);
 
 		String deviceId = Secure.getString(context.getContentResolver(),
 				Secure.ANDROID_ID);
@@ -74,13 +74,13 @@ public class DeviceRegistrar {
 
 			@Override
 			public void onSuccess(String response) {
-				SharedPreferences settings = Util.getSharedPreferences(context);
+				SharedPreferences settings = DataStore.getSharedPreferences(context);
 				SharedPreferences.Editor editor = settings.edit();
 				if (register) {
-					editor.putString(Util.DEVICE_REGISTRATION_ID,
+					editor.putString(DataStore.DEVICE_REGISTRATION_ID,
 							deviceRegistrationId);
 				} else {
-					editor.remove(Util.DEVICE_REGISTRATION_ID);
+					editor.remove(DataStore.DEVICE_REGISTRATION_ID);
 				}
 				editor.commit();
 				updateUIIntent.putExtra(STATUS_EXTRA,

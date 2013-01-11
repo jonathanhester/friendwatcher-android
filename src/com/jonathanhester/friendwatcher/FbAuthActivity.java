@@ -73,9 +73,9 @@ public class FbAuthActivity extends TrackedActivity {
 						}
 
 						Intent resultIntent = new Intent();
-						resultIntent.putExtra(Util.TOKEN,
+						resultIntent.putExtra(DataStore.TOKEN,
 								facebook.getAccessToken());
-						resultIntent.putExtra(Util.FBID, fbId);
+						resultIntent.putExtra(DataStore.FBID, fbId);
 						setResult(Activity.RESULT_OK, resultIntent);
 						finish();
 					}

@@ -2,6 +2,11 @@ package com.jonathanhester.friendwatcher;
 
 import java.util.ArrayList;
 
+import com.jonathanhester.friendwatcher.requests.FriendWatcherRequest;
+import com.jonathanhester.friendwatcher.requests.MyRequestFactory;
+import com.jonathanhester.requestFactory.Receiver;
+import com.jonathanhester.requestFactory.ServerFailure;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
@@ -9,12 +14,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class FriendsListFragment extends ListFragment {
 
 	ArrayAdapter<FriendStatus> friendsAdapter;
 	ArrayList<FriendStatus> friendsList;
 	View metaView;
+	
+	DataStore dataStore;
+	
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		dataStore = new DataStore(getActivity());
+	}
+	
 
 	public void updateFriendData(FriendData data) {
 		((TextView) metaView.findViewById(R.id.meta_name)).setText(data
@@ -54,7 +70,40 @@ public class FriendsListFragment extends ListFragment {
 		friendsAdapter = new FriendsListArrayAdapter(getActivity(),
 				R.layout.facebook_user, friendsList);
 		setListAdapter(friendsAdapter);
+		showCachedData();
+	}
+	
+	public void showUnfriended() {
 
+		if (dataStore.getListValid())
+			return;
+		final FriendWatcherRequest request = MyRequestFactory
+				.friendWatcherRequest(getActivity());
+		Toast.makeText(getActivity(), "Refreshing data...", Toast.LENGTH_SHORT)
+				.show();
+
+		request.fetchFriends(dataStore.getFbid(), dataStore.getToken()).fire(
+				new Receiver<String>() {
+					@Override
+					public void onFailure(ServerFailure failure) {
+						Tracker.getInstance().requestFail(
+								Tracker.TYPE_REQUEST_VERIFY, 0);
+						Toast.makeText(getActivity(),
+								"Failed to load list from server",
+								Toast.LENGTH_SHORT).show();
+					}
+
+					@Override
+					public void onSuccess(String response) {
+						dataStore.setListValid(true);
+						FriendData data = FriendData.fromJson(response);
+						dataStore.setCachedData(response);
+						updateFriendData(data);
+						Toast.makeText(getActivity(), "Data updated...",
+								Toast.LENGTH_SHORT).show();
+
+					}
+				});
 	}
 
 	private View getHeaderView() {
@@ -63,6 +112,14 @@ public class FriendsListFragment extends ListFragment {
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		view = inflater.inflate(R.layout.meta_data, null);
 		return view;
+	}
+	
+	private void showCachedData() {
+		String data = dataStore.getCachedData();
+		if (data != null) {
+			FriendData friendData = FriendData.fromJson(data);
+			updateFriendData(friendData);
+		}
 	}
 
 }

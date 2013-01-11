@@ -20,7 +20,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
@@ -55,6 +54,8 @@ public class FriendWatcherActivity extends FragmentActivity {
 
 	private FriendsListFragment friendsFragment;
 
+	private DataStore dataStore = new DataStore(this);
+
 	/**
 	 * A {@link BroadcastReceiver} to receive the response from a register or
 	 * unregister request, and to update the UI.
@@ -78,8 +79,6 @@ public class FriendWatcherActivity extends FragmentActivity {
 				message = getResources().getString(R.string.registration_error);
 			}
 
-			// Display a notification
-			SharedPreferences prefs = Util.getSharedPreferences(mContext);
 			if (status == DeviceRegistrar.REGISTERED_STATUS)
 				showUnfriended();
 		}
@@ -107,9 +106,10 @@ public class FriendWatcherActivity extends FragmentActivity {
 
 		registerReceiver(mUpdateUIReceiver, new IntentFilter(
 				Util.UPDATE_UI_INTENT));
-		Util.setSharedPreference(mContext, Util.LIST_VALID, null);
-	}
 
+		dataStore.setListValid(false);
+	}
+	
 	@Override
 	protected void onStart() {
 		super.onStart();
@@ -128,13 +128,11 @@ public class FriendWatcherActivity extends FragmentActivity {
 	}
 
 	private void reloadState() {
-		if (Util.getSharedPreferences(mContext).getString(Util.SKIP_WELCOME,
-				null) == null) {
+		if (!dataStore.getSkipWelcome()) {
 			startActivity(new Intent(this, WelcomeActivity.class));
 		} else if (!authedFb()) {
 			doFbAuth();
-		} else if (Util.getSharedPreferences(mContext).getString(Util.USER_ID,
-				null) == null) {
+		} else if (dataStore.getUserId() == null) {
 			createUser();
 		} else if (!c2dmRegistered()) {
 			// Register a receiver to provide register/unregister notifications
@@ -162,7 +160,8 @@ public class FriendWatcherActivity extends FragmentActivity {
 
 	public void stopLoading() {
 		Tracker.getInstance().stopTimeEvent(Tracker.TYPE_TIME_LOADING);
-		progressDialog.dismiss();
+		if (progressDialog != null)
+			progressDialog.dismiss();
 		Log.d("dialog", "Stopping dialog: " + progressDialog);
 	}
 
@@ -170,48 +169,50 @@ public class FriendWatcherActivity extends FragmentActivity {
 		startLoading("Validating Facebook user...");
 		final FriendWatcherRequest request = MyRequestFactory
 				.friendWatcherRequest(mContext);
-		request.validateUser(fbId(), token()).fire(new Receiver<String>() {
-			@Override
-			public void onFailure(ServerFailure failure) {
-				createUserFailures++;
-				Tracker.getInstance().requestFail(
-						Tracker.TYPE_REQUEST_VALIDATE_USER, 0);
-				stopLoading();
-				Util.saveFbCreds(mContext, null, null, null);
-				if (createUserFailures > 3)
-					Toast.makeText(mContext, "Error creating user",
-							Toast.LENGTH_SHORT).show();
-				else
-					doFbAuth();
-			}
+		request.validateUser(dataStore.getFbid(), dataStore.getToken()).fire(
+				new Receiver<String>() {
+					@Override
+					public void onFailure(ServerFailure failure) {
+						createUserFailures++;
+						Tracker.getInstance().requestFail(
+								Tracker.TYPE_REQUEST_VALIDATE_USER, 0);
+						stopLoading();
+						dataStore.saveFbCreds(null, null, null);
+						if (createUserFailures > 3)
+							Toast.makeText(mContext, "Error creating user",
+									Toast.LENGTH_SHORT).show();
+						else
+							doFbAuth();
+					}
 
-			@Override
-			public void onSuccess(String response) {
-				Tracker.getInstance().requestSuccess(
-						Tracker.TYPE_REQUEST_VALIDATE_USER,
-						response.equals("1"));
-				stopLoading();
+					@Override
+					public void onSuccess(String response) {
+						Tracker.getInstance().requestSuccess(
+								Tracker.TYPE_REQUEST_VALIDATE_USER,
+								response.equals("1"));
+						stopLoading();
 
-				if (!response.equals("1")) {
-					Toast.makeText(mContext,
-							"Unable to verify user. Let's try again",
-							Toast.LENGTH_SHORT).show();
-					Util.saveFbCreds(mContext, null, null, null);
-					doFbAuth();
-				} else {
-					Util.setSharedPreference(mContext, Util.USER_ID, response);
-					Toast.makeText(mContext, "Facebook user validated!",
-							Toast.LENGTH_SHORT).show();
-					reloadState();
-				}
-			}
-		});
+						if (!response.equals("1")) {
+							Toast.makeText(mContext,
+									"Unable to verify user. Let's try again",
+									Toast.LENGTH_SHORT).show();
+							dataStore.saveFbCreds(null, null, null);
+							doFbAuth();
+						} else {
+							dataStore.setUserId(response);
+							Toast.makeText(mContext,
+									"Facebook user validated!",
+									Toast.LENGTH_SHORT).show();
+							reloadState();
+						}
+					}
+				});
 
 	}
 
 	private void doFbAuth() {
 		// first clear registration id so we'll reregister with new fb creds
-		Util.setSharedPreference(mContext, Util.DEVICE_REGISTRATION_ID, null);
+		dataStore.setDeviceId(null);
 		Intent authFbIntent = new Intent(this, FbAuthActivity.class);
 		startActivityForResult(authFbIntent, 1);
 	}
@@ -219,32 +220,22 @@ public class FriendWatcherActivity extends FragmentActivity {
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		String fbId = data.getStringExtra(Util.FBID);
-		String token = data.getStringExtra(Util.TOKEN);
-		Util.saveFbCreds(mContext, token, fbId, null);
+		String fbId = data.getStringExtra(DataStore.FBID);
+		String token = data.getStringExtra(DataStore.TOKEN);
+		dataStore.saveFbCreds(token, fbId, null);
 	}
 
 	private boolean authedFb() {
-		String token = token();
+		String token = dataStore.getToken();
 		Tracker.getInstance().authed(token);
 		if (token == null)
 			return false;
 		return true;
 	}
 
-	private String token() {
-		return Util.getSharedPreferences(mContext).getString(Util.TOKEN, null);
-	}
-
-	private String fbId() {
-		return Util.getSharedPreferences(mContext).getString(Util.FBID, null);
-	}
-
 	private void verifyServerToken() {
-		String accessToken = Util.getSharedPreferences(mContext).getString(
-				Util.TOKEN, null);
-		String fbId = Util.getSharedPreferences(mContext).getString(Util.FBID,
-				null);
+		String accessToken = dataStore.getToken();
+		String fbId = dataStore.getFbid();
 		final FriendWatcherRequest request = MyRequestFactory
 				.friendWatcherRequest(mContext);
 		Tracker.getInstance().requestStart(Tracker.TYPE_REQUEST_VERIFY);
@@ -253,7 +244,7 @@ public class FriendWatcherActivity extends FragmentActivity {
 			public void onFailure(ServerFailure failure) {
 				Tracker.getInstance().requestFail(Tracker.TYPE_REQUEST_VERIFY,
 						0);
-				Util.saveFbCreds(mContext, null, null, null);
+				dataStore.saveFbCreds(null, null, null);
 			}
 
 			@Override
@@ -261,7 +252,7 @@ public class FriendWatcherActivity extends FragmentActivity {
 				Tracker.getInstance().requestSuccess(
 						Tracker.TYPE_REQUEST_VERIFY, response.equals("1"));
 				if (!response.equals("1")) {
-					Util.saveFbCreds(mContext, null, null, null);
+					dataStore.saveFbCreds(null, null, null);
 					doFbAuth();
 				}
 			}
@@ -269,8 +260,7 @@ public class FriendWatcherActivity extends FragmentActivity {
 	}
 
 	private boolean c2dmRegistered() {
-		String deviceRegistrationId = Util.getSharedPreferences(mContext)
-				.getString(Util.DEVICE_REGISTRATION_ID, null);
+		String deviceRegistrationId = dataStore.getDeviceId();
 		Tracker.getInstance().requestSuccess(Tracker.TYPE_C2DM,
 				(deviceRegistrationId != null));
 		if (deviceRegistrationId == null)
@@ -299,7 +289,7 @@ public class FriendWatcherActivity extends FragmentActivity {
 		// Handle item selection
 		switch (item.getItemId()) {
 		case R.id.refresh:
-			Util.setSharedPreference(mContext, Util.LIST_VALID, null);
+			dataStore.setListValid(false);
 			showUnfriended();
 			return true;
 		case R.id.reconnect:
@@ -321,42 +311,12 @@ public class FriendWatcherActivity extends FragmentActivity {
 		C2DMessaging.register(mContext, Util.GCM_SENDER_ID);
 	}
 
-	Facebook facebook = new Facebook(Util.getFacebookId());
-
 	private void showUnfriended() {
-		String listValid = Util.getSharedPreferences(mContext).getString(
-				Util.LIST_VALID, null);
-		if (listValid != null)
-			return;
-		final FriendWatcherRequest request = MyRequestFactory
-				.friendWatcherRequest(mContext);
-		startLoading("Fetching list...");
-		request.fetchFriends(fbId(), token()).fire(new Receiver<String>() {
-			@Override
-			public void onFailure(ServerFailure failure) {
-				Tracker.getInstance().requestFail(Tracker.TYPE_REQUEST_VERIFY,
-						0);
-				Toast.makeText(mContext, "Failed to load list from server",
-						Toast.LENGTH_SHORT).show();
-
-				stopLoading();
-			}
-
-			@Override
-			public void onSuccess(String response) {
-				stopLoading();
-				Util.setSharedPreference(mContext, Util.LIST_VALID, "1");
-				FriendData data = FriendData.fromJson(response);
-				friendsFragment.updateFriendData(data);
-				Toast.makeText(mContext, "Data updated...",
-						Toast.LENGTH_SHORT).show();
-
-			}
-		});
+		friendsFragment.showUnfriended();
 	}
 
 	private void reconnectToFb() {
-		Util.saveFbCreds(mContext, null, null, null);
+		dataStore.saveFbCreds(null, null, null);
 		reloadState();
 	}
 
@@ -364,42 +324,44 @@ public class FriendWatcherActivity extends FragmentActivity {
 		final FriendWatcherRequest request = MyRequestFactory
 				.friendWatcherRequest(mContext);
 		startLoading("Initiating request to Facebook...");
-		request.forceRefresh(fbId(), token()).fire(new Receiver<String>() {
-			@Override
-			public void onFailure(ServerFailure failure) {
-				Tracker.getInstance().requestFail(
-						Tracker.TYPE_REQUEST_FORCE_REFRESH, 0);
-				stopLoading();
-			}
+		request.forceRefresh(dataStore.getFbid(), dataStore.getToken()).fire(
+				new Receiver<String>() {
+					@Override
+					public void onFailure(ServerFailure failure) {
+						Tracker.getInstance().requestFail(
+								Tracker.TYPE_REQUEST_FORCE_REFRESH, 0);
+						stopLoading();
+					}
 
-			@Override
-			public void onSuccess(String response) {
-				stopLoading();
-				Toast.makeText(mContext,
-						"Success! Expect a notification soon...",
-						Toast.LENGTH_SHORT).show();
-			}
-		});
+					@Override
+					public void onSuccess(String response) {
+						stopLoading();
+						Toast.makeText(mContext,
+								"Success! Expect a notification soon...",
+								Toast.LENGTH_SHORT).show();
+					}
+				});
 	}
 
 	private void testPush() {
 		final FriendWatcherRequest request = MyRequestFactory
 				.friendWatcherRequest(mContext);
 		startLoading("Requesting test push notification...");
-		request.testPush(fbId(), token()).fire(new Receiver<String>() {
-			@Override
-			public void onFailure(ServerFailure failure) {
-				Tracker.getInstance().requestFail(
-						Tracker.TYPE_REQUEST_TEST_PUSH, 0);
-				stopLoading();
-			}
+		request.testPush(dataStore.getFbid(), dataStore.getToken()).fire(
+				new Receiver<String>() {
+					@Override
+					public void onFailure(ServerFailure failure) {
+						Tracker.getInstance().requestFail(
+								Tracker.TYPE_REQUEST_TEST_PUSH, 0);
+						stopLoading();
+					}
 
-			@Override
-			public void onSuccess(String response) {
-				stopLoading();
-				Toast.makeText(mContext, "Expect notification soon!",
-						Toast.LENGTH_SHORT).show();
-			}
-		});
+					@Override
+					public void onSuccess(String response) {
+						stopLoading();
+						Toast.makeText(mContext, "Expect notification soon!",
+								Toast.LENGTH_SHORT).show();
+					}
+				});
 	}
 }

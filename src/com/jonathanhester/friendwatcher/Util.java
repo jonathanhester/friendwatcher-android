@@ -15,15 +15,9 @@
  */
 package com.jonathanhester.friendwatcher;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -33,9 +27,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.AssetManager;
 import android.text.format.DateFormat;
-import android.util.Log;
 
 /**
  * Utility methods for getting the base URL for client-server communication and
@@ -48,6 +40,7 @@ public class Util {
 	 * The URL of the production service.
 	 */
 	public static final String PROD_URL = "http://friendwatcher.jonathanhester.com";
+	public static final String DEV_URL = "http://192.168.1.112:3000";
 
 	/**
 	 * Tag for logging.
@@ -60,40 +53,14 @@ public class Util {
 	private static final String ENVIRONMENT = ENVIRONMENT_PROD;
 	//private static final String ENVIRONMENT = ENVIRONMENT_LOCAL;
 
-	// Shared constants
-
 	public static final int REFRESH_FRIENDS = 10;
-	/**
-	 * Key for account name in shared preferences.
-	 */
-	public static final String FBID = "fbid";
 
-	public static final String TOKEN = "token";
-
-	public static final String USER_ID = "userId";
-
-	public static final String SKIP_WELCOME = "skipWelcome";
-
-	public static final String LIST_VALID = "listValid";
-
-	/**
-	 * Key for device registration id in shared preferences.
-	 */
-	public static final String DEVICE_REGISTRATION_ID = "deviceRegistrationID";
 
 	/**
 	 * An intent name for receiving registration/unregistration status.
 	 */
 	public static final String UPDATE_UI_INTENT = getPackageName()
 			+ ".UPDATE_UI";
-
-	// End shared constants
-
-	/**
-	 * Key for shared preferences.
-	 */
-	private static final String SHARED_PREFS = "friendwatcher"
-			.toUpperCase(Locale.ENGLISH) + "_PREFS";
 
 	/**
 	 * Cache containing the base URL for a given context.
@@ -121,7 +88,7 @@ public class Util {
 				message, contentIntent);
 		notification.flags |= Notification.FLAG_AUTO_CANCEL;
 
-		SharedPreferences settings = Util.getSharedPreferences(context);
+		SharedPreferences settings = DataStore.getSharedPreferences(context);
 		int notificatonID = settings.getInt("notificationID", 0);
 
 		NotificationManager nm = (NotificationManager) context
@@ -131,7 +98,7 @@ public class Util {
 		SharedPreferences.Editor editor = settings.edit();
 		editor.putInt("notificationID", ++notificatonID % 32);
 		editor.commit();
-		Util.setSharedPreference(context, Util.LIST_VALID, null);
+		DataStore.setBoolean(context, DataStore.LIST_VALID, false);
 	}
 
 	public static String parseDate(String stringDate) {
@@ -155,7 +122,7 @@ public class Util {
 		if (url == null) {
 			// if a debug_url raw resource exists, use its contents as the url
 			if (getEnvironment() == ENVIRONMENT_LOCAL) {
-				url = getDebugUrl(context);
+				url = Util.DEV_URL;
 			}
 			// otherwise, use the production url
 			if (url == null) {
@@ -177,98 +144,6 @@ public class Util {
 			return prod;
 		}
 		return local;
-	}
-
-	/**
-	 * Helper method to get a SharedPreferences instance.
-	 */
-	public static SharedPreferences getSharedPreferences(Context context) {
-		return context.getSharedPreferences(SHARED_PREFS, 0);
-	}
-
-	public static void setSharedPreference(Context context, String key,
-			String value) {
-		SharedPreferences settings = Util.getSharedPreferences(context);
-		SharedPreferences.Editor editor = settings.edit();
-		if (value == null)
-			editor.remove(key);
-		else
-			editor.putString(key, value);
-		editor.commit();
-	}
-
-	public static void saveFbCreds(Context context, String token, String fbId,
-			String userId) {
-		final SharedPreferences prefs = Util.getSharedPreferences(context);
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putString(Util.TOKEN, token);
-		editor.putString(Util.FBID, fbId);
-		editor.putString(Util.USER_ID, userId);
-		editor.commit();
-	}
-
-	/**
-	 * Returns true if we are running against a dev mode appengine instance.
-	 */
-	public static boolean isDebug(Context context) {
-		// Although this is a bit roundabout, it has the nice side effect
-		// of caching the result.
-		return !Util.PROD_URL.equals(getBaseUrl(context));
-	}
-
-	/**
-	 * Returns a debug url, or null. To set the url, create a file
-	 * {@code assets/debugging_prefs.properties} with a line of the form
-	 * 'url=http:/<ip address>:<port>'. A numeric IP address may be required in
-	 * situations where the device or emulator will not be able to resolve the
-	 * hostname for the dev mode server.
-	 */
-	private static String getDebugUrl(Context context) {
-		BufferedReader reader = null;
-		String url = null;
-		try {
-			AssetManager assetManager = context.getAssets();
-			InputStream is = assetManager
-					.open("debugging_prefs.properties.nexusone");
-			reader = new BufferedReader(new InputStreamReader(is));
-			while (true) {
-				String s = reader.readLine();
-				if (s == null) {
-					break;
-				}
-				if (s.startsWith("url=")) {
-					url = s.substring(4).trim();
-					break;
-				}
-			}
-		} catch (FileNotFoundException e) {
-			// O.K., we will use the production server
-			return null;
-		} catch (Exception e) {
-			Log.w(TAG, "Got exception " + e);
-			Log.w(TAG, Log.getStackTraceString(e));
-		} finally {
-			if (reader != null) {
-				try {
-					reader.close();
-				} catch (IOException e) {
-					Log.w(TAG, "Got exception " + e);
-					Log.w(TAG, Log.getStackTraceString(e));
-				}
-			}
-		}
-
-		return url;
-	}
-
-	public static String getIframeUrl(Context context) {
-		SharedPreferences sharedPrefs = getSharedPreferences(context);
-		String accessToken = sharedPrefs.getString(Util.TOKEN, null);
-		String fbId = sharedPrefs.getString(Util.FBID, null);
-
-		String url = getBaseUrl(context) + "/users/" + fbId + "?token="
-				+ accessToken;
-		return url;
 	}
 
 	/**
