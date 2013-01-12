@@ -21,16 +21,22 @@ public class FriendsListFragment extends ListFragment {
 	ArrayAdapter<FriendStatus> friendsAdapter;
 	ArrayList<FriendStatus> friendsList;
 	View metaView;
-	
+
 	DataStore dataStore;
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		dataStore = new DataStore(getActivity());
+		
 	}
 	
+	@Override
+	public void onResume() {
+		super.onResume();
+		showUnfriended();
+	}
 
 	public void updateFriendData(FriendData data) {
 		((TextView) metaView.findViewById(R.id.meta_name)).setText(data
@@ -72,7 +78,7 @@ public class FriendsListFragment extends ListFragment {
 		setListAdapter(friendsAdapter);
 		showCachedData();
 	}
-	
+
 	public void showUnfriended() {
 
 		if (dataStore.getListValid())
@@ -113,7 +119,7 @@ public class FriendsListFragment extends ListFragment {
 		view = inflater.inflate(R.layout.meta_data, null);
 		return view;
 	}
-	
+
 	private void showCachedData() {
 		String data = dataStore.getCachedData();
 		if (data != null) {

@@ -72,7 +72,7 @@ public class Util {
 	 */
 	public static void generateNotification(Context context, String message,
 			String type) {
-		int icon = R.drawable.blue_heart;
+		int icon = R.drawable.blue_heart_icon;
 		long when = System.currentTimeMillis();
 
 		Notification notification = new Notification(icon, message, when);

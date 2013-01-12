@@ -28,7 +28,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.facebook.android.Facebook;
 import com.jonathanhester.c2dm.C2DMessaging;
 import com.jonathanhester.friendwatcher.requests.FriendWatcherRequest;
 import com.jonathanhester.friendwatcher.requests.MyRequestFactory;
@@ -97,6 +96,9 @@ public class FriendWatcherActivity extends FragmentActivity {
 
 		Log.i(TAG, "onCreate");
 
+		registerReceiver(mUpdateUIReceiver, new IntentFilter(
+				Util.UPDATE_UI_INTENT));
+
 		// Create the list fragment and add it as our sole content.
 		if (getSupportFragmentManager().findFragmentById(android.R.id.content) == null) {
 			friendsFragment = new FriendsListFragment();
@@ -104,15 +106,13 @@ public class FriendWatcherActivity extends FragmentActivity {
 					.add(android.R.id.content, friendsFragment).commit();
 		}
 
-		registerReceiver(mUpdateUIReceiver, new IntentFilter(
-				Util.UPDATE_UI_INTENT));
-
 		dataStore.setListValid(false);
 	}
-	
+
 	@Override
 	protected void onStart() {
 		super.onStart();
+
 		reloadState();
 	}
 
@@ -312,7 +312,8 @@ public class FriendWatcherActivity extends FragmentActivity {
 	}
 
 	private void showUnfriended() {
-		friendsFragment.showUnfriended();
+		if (friendsFragment != null)
+			friendsFragment.showUnfriended();
 	}
 
 	private void reconnectToFb() {
