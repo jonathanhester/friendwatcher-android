@@ -99,12 +99,9 @@ public class FriendWatcherActivity extends FragmentActivity {
 		registerReceiver(mUpdateUIReceiver, new IntentFilter(
 				Util.UPDATE_UI_INTENT));
 
-		// Create the list fragment and add it as our sole content.
-		if (getSupportFragmentManager().findFragmentById(android.R.id.content) == null) {
-			friendsFragment = new FriendsListFragment();
-			getSupportFragmentManager().beginTransaction()
-					.add(android.R.id.content, friendsFragment).commit();
-		}
+		friendsFragment = new FriendsListFragment();
+		getSupportFragmentManager().beginTransaction()
+				.add(android.R.id.content, friendsFragment).commit();
 
 		dataStore.setListValid(false);
 	}
@@ -312,8 +309,7 @@ public class FriendWatcherActivity extends FragmentActivity {
 	}
 
 	private void showUnfriended() {
-		if (friendsFragment != null)
-			friendsFragment.showUnfriended();
+		friendsFragment.showUnfriended();
 	}
 
 	private void reconnectToFb() {

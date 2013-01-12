@@ -21,6 +21,8 @@ public class FriendsListFragment extends ListFragment {
 	ArrayAdapter<FriendStatus> friendsAdapter;
 	ArrayList<FriendStatus> friendsList;
 	View metaView;
+	
+	private boolean loadOnStartup = false;
 
 	DataStore dataStore;
 
@@ -35,10 +37,12 @@ public class FriendsListFragment extends ListFragment {
 	@Override
 	public void onResume() {
 		super.onResume();
-		showUnfriended();
+		if (loadOnStartup)
+			showUnfriended();
 	}
 
-	public void updateFriendData(FriendData data) {
+	private void updateFriendData(FriendData data) {
+		if (data.getLastSynced() == null) return;
 		((TextView) metaView.findViewById(R.id.meta_name)).setText(data
 				.getName());
 		((TextView) metaView.findViewById(R.id.meta_started_tracking))
@@ -76,11 +80,14 @@ public class FriendsListFragment extends ListFragment {
 		friendsAdapter = new FriendsListArrayAdapter(getActivity(),
 				R.layout.facebook_user, friendsList);
 		setListAdapter(friendsAdapter);
-		showCachedData();
+	
 	}
 
 	public void showUnfriended() {
-
+		showCachedData();
+		if (!isAdded())
+			return;
+		
 		if (dataStore.getListValid())
 			return;
 		final FriendWatcherRequest request = MyRequestFactory
