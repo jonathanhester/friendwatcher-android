@@ -80,7 +80,6 @@ public class FriendsListFragment extends ListFragment {
 		friendsAdapter = new FriendsListArrayAdapter(getActivity(),
 				R.layout.facebook_user, friendsList);
 		setListAdapter(friendsAdapter);
-	
 	}
 
 	public void showUnfriended() {
@@ -101,6 +100,8 @@ public class FriendsListFragment extends ListFragment {
 					public void onFailure(ServerFailure failure) {
 						Tracker.getInstance().requestFail(
 								Tracker.TYPE_REQUEST_VERIFY, 0);
+						if (getActivity() == null)
+							return;
 						Toast.makeText(getActivity(),
 								"Failed to load list from server",
 								Toast.LENGTH_SHORT).show();
@@ -112,6 +113,8 @@ public class FriendsListFragment extends ListFragment {
 						FriendData data = FriendData.fromJson(response);
 						dataStore.setCachedData(response);
 						updateFriendData(data);
+						if (getActivity() == null)
+							return;
 						Toast.makeText(getActivity(), "Data updated...",
 								Toast.LENGTH_SHORT).show();
 

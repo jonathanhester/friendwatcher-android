@@ -101,7 +101,7 @@ public class FriendWatcherActivity extends FragmentActivity {
 
 		friendsFragment = new FriendsListFragment();
 		getSupportFragmentManager().beginTransaction()
-				.add(android.R.id.content, friendsFragment).commit();
+				.replace(android.R.id.content, friendsFragment).commit();
 
 		dataStore.setListValid(false);
 	}
@@ -204,7 +204,6 @@ public class FriendWatcherActivity extends FragmentActivity {
 						}
 					}
 				});
-
 	}
 
 	private void doFbAuth() {
