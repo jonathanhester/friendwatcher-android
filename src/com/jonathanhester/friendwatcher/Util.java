@@ -17,8 +17,6 @@ package com.jonathanhester.friendwatcher;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.TimeZone;
 
 import android.app.Notification;
@@ -42,6 +40,9 @@ public class Util {
 	public static final String PROD_URL = "http://friendwatcher.jonathanhester.com";
 	public static final String DEV_URL = "http://192.168.1.112:3000";
 
+	public static final String PROD_FB_APP_ID = "114363205330822";
+	public static final String DEV_FB_APP_ID = "115667171863835";
+	
 	/**
 	 * Tag for logging.
 	 */
@@ -61,11 +62,6 @@ public class Util {
 	 */
 	public static final String UPDATE_UI_INTENT = getPackageName()
 			+ ".UPDATE_UI";
-
-	/**
-	 * Cache containing the base URL for a given context.
-	 */
-	private static final Map<Context, String> URL_MAP = new HashMap<Context, String>();
 
 	/**
 	 * Display a notification containing the given string.
@@ -118,18 +114,12 @@ public class Util {
 	 * service.
 	 */
 	public static String getBaseUrl(Context context) {
-		String url = URL_MAP.get(context);
-		if (url == null) {
-			// if a debug_url raw resource exists, use its contents as the url
-			if (getEnvironment() == ENVIRONMENT_LOCAL) {
-				url = Util.DEV_URL;
-			}
-			// otherwise, use the production url
-			if (url == null) {
-				url = Util.PROD_URL;
-			}
-			URL_MAP.put(context, url);
-		}
+		String url;
+		if (getEnvironment() == ENVIRONMENT_LOCAL)
+			url = Util.DEV_URL;
+		else
+			url = Util.PROD_URL;
+		
 		return url;
 	}
 
@@ -138,12 +128,7 @@ public class Util {
 	}
 
 	public static String getFacebookId() {
-		String local = "115667171863835";
-		String prod = "114363205330822";
-		if (ENVIRONMENT == ENVIRONMENT_PROD) {
-			return prod;
-		}
-		return local;
+		return PROD_FB_APP_ID;
 	}
 
 	/**

@@ -2,27 +2,30 @@ package com.jonathanhester.friendwatcher;
 
 import java.util.ArrayList;
 
-import com.jonathanhester.friendwatcher.requests.FriendWatcherRequest;
-import com.jonathanhester.friendwatcher.requests.MyRequestFactory;
-import com.jonathanhester.requestFactory.Receiver;
-import com.jonathanhester.requestFactory.ServerFailure;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.jonathanhester.friendwatcher.requests.FriendWatcherRequest;
+import com.jonathanhester.friendwatcher.requests.MyRequestFactory;
+import com.jonathanhester.requestFactory.Receiver;
+import com.jonathanhester.requestFactory.ServerFailure;
 
 public class FriendsListFragment extends ListFragment {
 
 	ArrayAdapter<FriendStatus> friendsAdapter;
 	ArrayList<FriendStatus> friendsList;
 	View metaView;
-	
+	View footerView;
+
 	private boolean loadOnStartup = false;
+	private int page;
 
 	DataStore dataStore;
 
@@ -31,9 +34,9 @@ public class FriendsListFragment extends ListFragment {
 		super.onCreate(savedInstanceState);
 
 		dataStore = new DataStore(getActivity());
-		
+
 	}
-	
+
 	@Override
 	public void onResume() {
 		super.onResume();
@@ -42,20 +45,22 @@ public class FriendsListFragment extends ListFragment {
 	}
 
 	private void updateFriendData(FriendData data) {
-		if (data.getLastSynced() == null) return;
-		((TextView) metaView.findViewById(R.id.meta_name)).setText(data
-				.getName());
-		((TextView) metaView.findViewById(R.id.meta_started_tracking))
-				.setText(data.getCreated());
+		if (data.getLastSynced() != null) {
+			((TextView) metaView.findViewById(R.id.meta_name)).setText(data
+					.getName());
+			((TextView) metaView.findViewById(R.id.meta_started_tracking))
+					.setText(data.getCreated());
 
-		if (!data.getLastSynced().equals("null")) {
-			metaView.findViewById(R.id.meta_extra).setVisibility(View.VISIBLE);
-			((TextView) metaView.findViewById(R.id.meta_last_update))
-					.setText(data.getLastSynced());
-			((TextView) metaView.findViewById(R.id.meta_num_removed))
-					.setText(data.getNumRemoved());
-			((TextView) metaView.findViewById(R.id.meta_total_tracking))
-					.setText(data.getTotal());
+			if (!data.getLastSynced().equals("null")) {
+				metaView.findViewById(R.id.meta_extra).setVisibility(
+						View.VISIBLE);
+				((TextView) metaView.findViewById(R.id.meta_last_update))
+						.setText(data.getLastSynced());
+				((TextView) metaView.findViewById(R.id.meta_num_removed))
+						.setText(data.getNumRemoved());
+				((TextView) metaView.findViewById(R.id.meta_total_tracking))
+						.setText(data.getTotal());
+			}
 		}
 
 		if (data.getFriendStatusList().size() > 0) {
@@ -64,9 +69,18 @@ public class FriendsListFragment extends ListFragment {
 		}
 
 		ArrayList<FriendStatus> friends = data.getFriendStatusList();
-		friendsList.clear();
+		if (page == 1)
+			friendsList.clear();
 		friendsList.addAll(friends);
 		friendsAdapter.notifyDataSetChanged();
+
+		if (!data.getIsLast())
+			footerView.findViewById(R.id.more_button).setVisibility(
+					View.VISIBLE);
+		else
+			footerView.findViewById(R.id.more_button).setVisibility(
+					View.GONE);
+
 	}
 
 	@Override
@@ -74,6 +88,8 @@ public class FriendsListFragment extends ListFragment {
 		super.onActivityCreated(savedInstanceState);
 		metaView = getHeaderView();
 		getListView().addHeaderView(metaView);
+		footerView = getFooterView();
+		getListView().addFooterView(footerView);
 
 		friendsList = new ArrayList<FriendStatus>();
 
@@ -83,19 +99,25 @@ public class FriendsListFragment extends ListFragment {
 	}
 
 	public void showUnfriended() {
-		showCachedData();
+		if (friendsList != null && friendsList.size() == 0)
+			showCachedData();
 		if (!isAdded())
 			return;
-		
+
 		if (dataStore.getListValid())
 			return;
+		page = 1;
+		fetchData();
+	}
+
+	private void fetchData() {
 		final FriendWatcherRequest request = MyRequestFactory
 				.friendWatcherRequest(getActivity());
-		Toast.makeText(getActivity(), "Refreshing data...", Toast.LENGTH_SHORT)
+		Toast.makeText(getActivity(), "Loading data...", Toast.LENGTH_SHORT)
 				.show();
 
-		request.fetchFriends(dataStore.getFbid(), dataStore.getToken()).fire(
-				new Receiver<String>() {
+		request.fetchFriends(dataStore.getFbid(), dataStore.getToken(), page)
+				.fire(new Receiver<String>() {
 					@Override
 					public void onFailure(ServerFailure failure) {
 						Tracker.getInstance().requestFail(
@@ -111,7 +133,8 @@ public class FriendsListFragment extends ListFragment {
 					public void onSuccess(String response) {
 						dataStore.setListValid(true);
 						FriendData data = FriendData.fromJson(response);
-						dataStore.setCachedData(response);
+						if (page == 1)
+							dataStore.setCachedData(response);
 						updateFriendData(data);
 						if (getActivity() == null)
 							return;
@@ -127,6 +150,25 @@ public class FriendsListFragment extends ListFragment {
 		LayoutInflater inflater = (LayoutInflater) this.getActivity()
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		view = inflater.inflate(R.layout.meta_data, null);
+		return view;
+	}
+
+	private View getFooterView() {
+		View view;
+		LayoutInflater inflater = (LayoutInflater) this.getActivity()
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		view = inflater.inflate(R.layout.more_button, null);
+
+		view.findViewById(R.id.more_button).setOnClickListener(
+				new OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						page++;
+						fetchData();
+					}
+				});
+
 		return view;
 	}
 

@@ -14,6 +14,7 @@ public class FriendData {
 	private String created;
 	private String numRemoved;
 	private String name;
+	private boolean isLast;
 	
 	public String getName() {
 		return name;
@@ -63,6 +64,14 @@ public class FriendData {
 		this.numRemoved = numRemoved;
 	}
 	
+	public boolean getIsLast() {
+		return isLast;
+	}
+
+	public void setIsLast(String isLast) {
+		this.isLast = (isLast.equals("true"));
+	}
+
 	public static FriendData fromJson(String response) {
 		
 		ArrayList<FriendStatus> list = new ArrayList<FriendStatus>();
@@ -70,19 +79,26 @@ public class FriendData {
 		
 		try {
 			JSONObject json = new JSONObject(response);
-			JSONObject meta = json.getJSONObject("meta");
-			String userName = meta.getString("name");
-			friendData.setName(userName);
+			String isLast = json.getString("isLast");
+			friendData.setIsLast(isLast);
 			
-			String created = Util.parseDate(meta.getString("created"));
-			String lastSynced = Util.parseDate(meta.getString("synced"));
-			String total = meta.getString("total");
-			String numRemoved = meta.getString("removed");
-			
-			friendData.setCreated(created);
-			friendData.setLastSynced(lastSynced);
-			friendData.setTotal(total);
-			friendData.setNumRemoved(numRemoved);
+			try {
+				JSONObject meta = json.getJSONObject("meta");
+				String userName = meta.getString("name");
+				friendData.setName(userName);
+				
+				String created = Util.parseDate(meta.getString("created"));
+				String lastSynced = Util.parseDate(meta.getString("synced"));
+				String total = meta.getString("total");
+				String numRemoved = meta.getString("removed");
+				
+				friendData.setCreated(created);
+				friendData.setLastSynced(lastSynced);
+				friendData.setTotal(total);
+				friendData.setNumRemoved(numRemoved);
+			} catch (Exception e) {
+				Log.d("asdf", "no meta data but that's fine");
+			}
 			
 			JSONObject data = json.getJSONObject("data");
 			JSONArray events = data.getJSONArray("events");

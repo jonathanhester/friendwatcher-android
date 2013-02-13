@@ -82,4 +82,9 @@
         <item name="android:paddingTop">10dp</item>
     </style>
 
+    <style name="MoreButton" parent="@android:style/TextAppearance.Medium">
+        <item name="android:gravity">center</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
 </resources>

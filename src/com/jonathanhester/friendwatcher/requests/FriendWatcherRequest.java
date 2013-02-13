@@ -29,10 +29,11 @@ public class FriendWatcherRequest {
 		return new Request<Boolean>(path, "POST", params);
 	}
 	
-	public Request<String> fetchFriends(String fbId, String accessToken) {
+	public Request<String> fetchFriends(String fbId, String accessToken, int page) {
 		String path = this.basePath + "/users/" + fbId;
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("token", accessToken);
+		params.put("page", Integer.toString(page));
 		return new Request<String>(path, "GET", params);
 	}
 
