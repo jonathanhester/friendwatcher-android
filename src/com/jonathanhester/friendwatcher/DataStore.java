@@ -27,7 +27,7 @@ public class DataStore {
 
 	public static final String DEVICE_REGISTRATION_ID = "deviceRegistrationID";
 	
-	private static final String CACHED_DATA = "friends";
+	private static final String CACHED_DATA = "friends_v2";
 
 	public DataStore(Context context) {
 		this.context = context;
